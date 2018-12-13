@@ -1,11 +1,12 @@
 api:
-  host: http://trimet.dev.conveyal.com
+  host: https://otp-mta-prod.camsys-apps.com
   path: /otp/routers/default
-  port: 8001
+  port: 443
+  otpApiKey: AGBKDQFGaVjy6gPzQqGdtKNrPBZD0bLi
 
 map:
-  initLat: 45.52
-  initLon: -122.682
+  initLat: 40.76
+  initLon: -73.97
   baseLayers:
     - name: Streets
       url: http://tile.stamen.com/terrain/{z}/{x}/{y}.png
@@ -17,14 +18,14 @@ map:
 geocoder:
   boundary:
     rect:
-      minLon: -123.2034
-      maxLon: -122.135
-      minLat: 45.273
-      maxLat: 45.7445
+      minLon: -74.62
+      maxLon: -73.51
+      minLat: 41.11
+      maxLat: 40.42
   MAPZEN_KEY: MAPZEN_KEY
   focusPoint:
-    lat: 45.5223452
-    lon: -122.6821804
+    lat: 40.76
+    lon: -73.97
   # Optional custom Pelias instance (defaults to Mapzen Search)
   # baseUrl: https://geocoder.example.com/pelias/v1
 

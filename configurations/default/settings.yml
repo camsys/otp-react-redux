@@ -1,6 +1,6 @@
 entries:
   - lib/index.js:dist/index.js
   - lib/index.css:dist/index.css
-  - index.html:dist/index.html
-  - example.js:dist/example.js
-  - example.css:dist/example.css
+  - ./index.html:dist/index.html
+  - ./example.js:dist/example.js
+  - ./example.css:dist/example.css

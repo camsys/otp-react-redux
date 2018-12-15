@@ -32,9 +32,11 @@ geocoder:
 modeGroups:
   - name: Transit
     modes:
-      - TRAM
-      - BUS
-  - name: Walk/Bike
+      - TRANSIT
+      - WALK
+  - name: Walk only
     modes:
       - WALK
-      - BICYCLE
+  - name: Drive only
+    modes:
+      - CAR

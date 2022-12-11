@@ -1,8 +1,8 @@
 api:
-  host: http://localhost
+  host: http://otpv2-nebdot-dev.camsys-apps.com
   path: /otp/routers/default
-  port: 8001
-# v2: false
+  port: 80
+  v2: true
 
 # Add Bugsnag key for error reporting
 # bugsnag:
@@ -89,18 +89,11 @@ persistence:
 #        href: ''
 
 map:
-  initLat: 45.52
-  initLon: -122.682
+  initLat: 41.261066
+  initLon: -96.132927
   baseLayers:
     - name: Streets
-      url: //cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}@2x.png
-      subdomains: "abcd"
-      attribution: 'Map tiles: &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; <a href="https://carto.com/attributions">CARTO</a>'
-      maxZoom: 20
-      hasRetinaSupport: true
-    - name: Stamen Toner Lite
-      url: http://tile.stamen.com/toner-lite/{z}/{x}/{y}.png
-      attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://www.openstreetmap.org/copyright">ODbL</a>.'
+      url: https://basemaps.cartocdn.com/gl/positron-gl-style/style.json
   ### Optional transitive.js (route rendering) properties:
   ### - labeledModes: an array of OTP modes for which the route label should be
   ###                 rendered on the map. Example of OTP modes: BUS, RAIL, ...
@@ -134,13 +127,13 @@ map:
 
 # example config for a Pelias geocoder (https://pelias.io/)
 geocoder:
-  apiKey: MAPZEN_KEY
-  boundary:
-    rect:
-      minLon: -123.2034
-      maxLon: -122.135
-      minLat: 45.273
-      maxLat: 45.7445
+  #apiKey: MAPZEN_KEY
+  #boundary:
+  #  rect:
+  #    minLon: -123.2034
+  #    maxLon: -122.135
+  #    minLat: 45.273
+  #    maxLat: 45.7445
   focusPoint:
     lat: 45.5223452
     lon: -122.6821804
@@ -149,10 +142,10 @@ geocoder:
   #   headers:
   #     x-custom-header: abc123
   # required geocoder type.
-  type: PELIAS
+  type: NOAPIGEOCODER
   # This base URL is required as the libraries will default to using now-defunct
   # mapzen urls
-  baseUrl: https://geocoder.example.com/pelias/v1
+  #baseUrl: https://geocoder.example.com/pelias/v1
   # This allows the location field dropdown headers to be colored based on Pelias layer
   #resultsColors:
   #  stops: "#007fae"
@@ -179,41 +172,22 @@ geocoder:
 # Use this mode config for the enhanced Transit+ config
 modes:
   # This is the default behavior for flex merging.
-  # If set to false, each FLEX mode (FLEX_EGRESS,FLEX_ACCESS,FLEX_DIRECT) will 
-  # be treated separately. If set to true, a single FLEX mode will automatically 
+  # If set to false, each FLEX mode (FLEX_EGRESS,FLEX_ACCESS,FLEX_DIRECT) will
+  # be treated separately. If set to true, a single FLEX mode will automatically
   # be expanded and reduced to those three modes.
-  mergeFlex: true 
+  mergeFlex: true
   modeOptions:
     - mode: TRANSIT
     - mode: WALK
-    - mode: CAR
-    - mode: BICYCLE
-    - mode: RENT
-      icon: mobile
-      # This overrides the label generated from the i18n. Use when defining modes that are not supported by OTP i18n
-      # label: Rental 
-      
+
   transitModes:
     - mode: BUS
       label: Bus
-      # A mode color can be added, used throughout the application,
-      # most notably in the enhanced stop viewer bubble
       color: blue
-    - mode: TRAM
-      label: MAX & Streetcar
-    - mode: RAIL
-      label: WES
-    - mode: GONDOLA
-      label: Aerial Tram
 
   accessModes:
-    - mode: BICYCLE
-      label: Transit + Bike
 
   bicycleModes:
-    - mode: BICYCLE
-      label: Own Bike
-      iconWidth: 18
 
 # # The following modules require the datastoreUrl and trinetReDirect properties
 # # to be set. Note: Most of these components are currently only configured for
@@ -417,9 +391,9 @@ itinerary:
 # popups:
 #   targets:
 #     testTarget: # To set a name for this target, create the i18n string "config.popups.testTarget"
-#       url: http://example.com/ 
+#       url: http://example.com/
 #       modal: false # Setting this to false always launches the popup as a browser popup
-#     secondTarget: 
+#     secondTarget:
 #       url: http://test.com/
 #       appendLocale: false # Defaults to true, if set to false otp-rr will not append the current i18n language to the popup URL.
 #   launchers:
@@ -494,13 +468,13 @@ itinerary:
 #     name: Español
 
 ### Localization section to provide language/locale settings
-#localization:
+localization:
 #  # An ambient currency should be defined here (defaults to USD).
 #  # In some components such as DefaultItinerary, we display a cost element
 #  # that falls back to $0.00 (or its equivalent in the configured ambient currency
 #  # and in the user-selected locale) if no fare or currency info is available.
-#  currency: 'USD'
-#  defaultLocale: 'en-US'
+  currency: 'USD'
+  defaultLocale: 'en-US'
 
 ### If using OTP Middleware, you can define the optional phone number options below.
 # phoneFormatOptions:

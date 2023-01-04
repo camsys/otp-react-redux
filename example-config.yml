@@ -127,25 +127,25 @@ map:
 
 # example config for a Pelias geocoder (https://pelias.io/)
 geocoder:
-  #apiKey: MAPZEN_KEY
-  #boundary:
-  #  rect:
-  #    minLon: -123.2034
-  #    maxLon: -122.135
-  #    minLat: 45.273
-  #    maxLat: 45.7445
+  apiKey: ge-22c3c5fa3c3c3bb4
+  boundary:
+    rect:
+      minLon: -104.21463043359374
+      maxLon: -95.10009796289062
+      minLat: 39.89734049725837
+      maxLat: 43.08115972356153
   focusPoint:
-    lat: 45.5223452
-    lon: -122.6821804
+    lat: 41.21609510026402
+    lon: -95.94879181054687
   # Custom fetch options to pass to geocoder resource.
   # options:
   #   headers:
   #     x-custom-header: abc123
   # required geocoder type.
-  type: NOAPIGEOCODER
+  type: PELIAS
   # This base URL is required as the libraries will default to using now-defunct
   # mapzen urls
-  #baseUrl: https://geocoder.example.com/pelias/v1
+  baseUrl: https://api.geocode.earth/v1
   # This allows the location field dropdown headers to be colored based on Pelias layer
   #resultsColors:
   #  stops: "#007fae"

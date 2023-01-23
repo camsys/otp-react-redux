@@ -4,7 +4,7 @@
   "main": "build/index.js",
   "scripts": {
     "a11y-test": "jest a11y/ --runInBand --force-exit",
-    "build": "craco build --openssl-legacy-provider",
+    "build": "craco --openssl-legacy-provider build",
     "check:i18n": "node node_modules/@opentripplanner/scripts/lib/run-validate-i18n.js lib i18n/en-US.yml i18n/fr.yml",
     "unit": "jest __tests__/",
     "lint": "lint-staged",
@@ -16,7 +16,7 @@
     "test": "yarn run lint && yarn run typecheck && yarn check:i18n && yarn run unit",
     "typecheck": "yarn tsc",
     "semantic-release": "semantic-release",
-    "start": "craco start --openssl-legacy-provider",
+    "start": "craco --openssl-legacy-provider start",
     "percy-serve": "serve",
     "percy-har-express": "har-express"
   },

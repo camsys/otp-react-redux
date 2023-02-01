@@ -93,7 +93,14 @@ map:
   initLon: -96.132927
   baseLayers:
     - name: Streets
-      url: https://basemaps.cartocdn.com/gl/positron-gl-style/style.json
+      url: //cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}@2x.png
+      subdomains: "abcd"
+      attribution: 'Map tiles: &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; <a href="https://carto.com/attributions">CARTO</a>'
+      maxZoom: 20
+      hasRetinaSupport: true
+    - name: Stamen Toner Lite
+      url: http://tile.stamen.com/toner-lite/{z}/{x}/{y}.png
+      attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://www.openstreetmap.org/copyright">ODbL</a>.'
   ### Optional transitive.js (route rendering) properties:
   ### - labeledModes: an array of OTP modes for which the route label should be
   ###                 rendered on the map. Example of OTP modes: BUS, RAIL, ...
@@ -105,6 +112,22 @@ map:
   ###                         For examples of applicable style attributes, see
   ###                         https://github.com/conveyal/transitive.js/blob/master/stories/Transitive.stories.js#L47.
   ### - disableFlexArc: optional parameter to disable rendering flex itinerary legs as an arc.
+  # Custom Overlays
+  # overlays:
+  #   The OTP2 overlay is slightly more difficult to use
+  #   - type: otp2
+  #   Each OTP2 overlay has to be configured here. The "type" must match
+  #   what's configured in router-config.json
+  #   layers:
+  #   - type: stops
+  #   - type: rentalVehicles
+  #     # Layers that include a network attribute can include a network filter field
+  #     # The layer name and ID will be automatically generated. The name can be set
+  #     # using i18n keys.
+  #     network: lime_seattle
+  #   - type: rentalVehicles
+  #     network: Link_Seattle
+  #   - type: rentalStations
   # transitive:
   #   labeledModes:
   #     - BUS
@@ -121,6 +144,7 @@ map:
   #       font-family: Hind, sans-serif
   #       font-size: 18px
   #   disableFlexArc: true
+  
 
 # it is possible to leave out a geocoder config entirely. In that case only
 # GPS coordinates will be used when finding the origin/destination.
@@ -316,6 +340,13 @@ itinerary:
 #     agencyId: PSC
 #     logo: https://d2tyb7byn1fef9.cloudfront.net/psc.png
 #     order: 1
+#     colorMode: gtfs # One of gtfs, gtfs-softened, disabled. see util/viewer.js for more details.
+#     # Mode color overrides. If a GTFS supplies weird colors for
+#     # a mode, they can be overridden here. This is treated as GTFS data.
+#     modeColors:
+#       BUS: # Any OTP mode
+#         color: 00FF00 # HEX color without the # (like GTFS)
+#         textColor: FFFFFF # HEX color without the # (like GTFS)
 #   - feedId: TriMet
 #     agencyId: TRIMET
 #     name: TriMet
@@ -434,6 +465,8 @@ itinerary:
 #           0.9: 'Mostly Accessible'
 #       popups:
 #         testTarget: Test Target!
+#         # Optional string used for narrow UI elements such as link buttons under trip details.
+#         testTarget-narrow: Target!
 #       menuItems:
 #         demo-item: Demo Item
 #     errorMessages:

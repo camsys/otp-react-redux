@@ -1,0 +1,1 @@
+{"version":3,"file":"query-params-i18n.d.ts","sourceRoot":"","sources":["../../src/SettingsSelectorPanel/query-params-i18n.tsx"],"names":[],"mappings":"AAKA,OAAO,EAAoB,SAAS,EAAE,MAAM,YAAY,CAAC;AAGzD,OAAO,KAAK,EAAE,qBAAqB,EAAE,MAAM,UAAU,CAAC;AAStD,eAAO,MAAM,eAAe,EAAE,MAAM,CAAC,MAAM,EAAE,MAAM,CAElD,CAAC;AAqIF;;GAEG;AACH,wBAAgB,6BAA6B,CAC3C,IAAI,EAAE,SAAS,GACd,qBAAqB,CAwMvB"}

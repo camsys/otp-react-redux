@@ -260,6 +260,8 @@ components:
           }
       }
     viewAll: View all options
+  NarrativeRoutingResults:
+    emptyResults: No results found. Please try a different search.
   NavLoginButton:
     help: Help
     myAccount: My account

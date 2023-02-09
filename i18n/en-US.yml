@@ -781,6 +781,7 @@ common:
     print: Print
     save: Save
     startOver: Start Over
+    refresh: Refresh
     yes: Yes
   # Shared itinerary description messages
   itineraryDescriptions:

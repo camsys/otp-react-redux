@@ -33,7 +33,7 @@
 
 /* Necessary for defining the height in the main panel nested elements. */
 .main-row main {
-  height: 100%;
+  height: 98%;
 }
 
 .sidebar {
@@ -41,6 +41,14 @@
   padding: 0;
   box-shadow: 3px 0px 12px #00000052;
   z-index: 1000;
+}
+
+.sidebar-footer {
+  position: absolute;
+  width: 100%;
+  bottom: 14px;
+  right: 14px;
+  text-align: right;
 }
 
 .map-container {

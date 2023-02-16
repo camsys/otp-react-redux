@@ -56,3 +56,22 @@
   margin: 0px;
   padding: 0px;
 }
+
+.otp .sidebar-footer {
+  position: absolute;
+  width: 100%;
+  right: 14px;
+  text-align: right;
+  top: 26px;
+  z-index: 10000;
+  -webkit-transform: translateY(-50%);
+  transform: translateY(-50%);
+}
+.otp .sidebar-footer a {
+  color: #212121;
+  text-decoration: underline;
+}
+.otp .sidebar-footer a:hover {
+  color: #212121;
+  text-decoration: none;
+}

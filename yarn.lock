@@ -2428,6 +2428,22 @@
     "@opentripplanner/core-utils" "^4.1.0"
     prop-types "^15.7.2"
 
+"@opentripplanner/core-utils@./custom-packages/otp-ui/core-utils", "@opentripplanner/core-utils@file:custom-packages/otp-ui/core-utils":
+  version "4.8.0"
+  dependencies:
+    "@mapbox/polyline" "^1.1.0"
+    "@opentripplanner/geocoder" "^1.1.2"
+    "@styled-icons/foundation" "^10.34.0"
+    "@turf/along" "^6.0.1"
+    bowser "^2.7.0"
+    date-fns "^2.23.0"
+    date-fns-tz "^1.1.4"
+    lodash.clonedeep "^4.5.0"
+    lodash.isequal "^4.5.0"
+    moment "^2.24.0"
+    prop-types "^15.7.2"
+    qs "^6.9.1"
+
 "@opentripplanner/core-utils@^4.1.0":
   version "4.4.0"
   resolved "https://registry.yarnpkg.com/@opentripplanner/core-utils/-/core-utils-4.4.0.tgz#3eb8f9718d32ce50e3b79d975d682559c5a7b0bf"
@@ -2468,24 +2484,6 @@
   version "4.7.1"
   resolved "https://registry.yarnpkg.com/@opentripplanner/core-utils/-/core-utils-4.7.1.tgz#72e708d3818f6764726b489192d7501e86d012d3"
   integrity sha512-AGtNEqqNLYMp+elLiQKVf6QcP4KIoMugN7oZ4+G1p5a1eMMtP5wrxk/2IidCkkz2c+wacljoPZ2pWF630gvj7w==
-  dependencies:
-    "@mapbox/polyline" "^1.1.0"
-    "@opentripplanner/geocoder" "^1.1.2"
-    "@styled-icons/foundation" "^10.34.0"
-    "@turf/along" "^6.0.1"
-    bowser "^2.7.0"
-    date-fns "^2.23.0"
-    date-fns-tz "^1.1.4"
-    lodash.clonedeep "^4.5.0"
-    lodash.isequal "^4.5.0"
-    moment "^2.24.0"
-    prop-types "^15.7.2"
-    qs "^6.9.1"
-
-"@opentripplanner/core-utils@^4.8.0":
-  version "4.8.0"
-  resolved "https://registry.yarnpkg.com/@opentripplanner/core-utils/-/core-utils-4.8.0.tgz#54f42fe038c0a9e011f0e126c42fe2f31db3148a"
-  integrity sha512-vv1vDd5xTBpLoViPwa0fjYBS+u0OD/Sgp+97Q83HmRr4V8Lj/LXSdjtQWIWZHuN3TUIhDGH2Cuk+f1UVhGHJDw==
   dependencies:
     "@mapbox/polyline" "^1.1.0"
     "@opentripplanner/geocoder" "^1.1.2"
@@ -2678,12 +2676,10 @@
     flat "^5.0.2"
     velocity-react "^1.4.3"
 
-"@opentripplanner/trip-form@^1.10.1":
+"@opentripplanner/trip-form@./custom-packages/otp-ui/trip-form":
   version "1.10.1"
-  resolved "https://registry.yarnpkg.com/@opentripplanner/trip-form/-/trip-form-1.10.1.tgz#6941e9fe35616427a17e65d60ee140474ff0f111"
-  integrity sha512-AR7OAjQhY49AlaEUvqBfji3WEycHXvkIPHSxidmEYsFk+TUYVeqOcRPZuspepiYjdCdus85IGiubY3bGOwPNyg==
   dependencies:
-    "@opentripplanner/core-utils" "^4.5.0"
+    "@opentripplanner/core-utils" "file:../../Library/Caches/Yarn/v6/npm-@opentripplanner-trip-form-1.10.1-77848a9b-2391-4c0b-89ba-576e5ee9775d-1675877524109/node_modules/@opentripplanner/core-utils"
     "@opentripplanner/icons" "^1.2.1"
     "@styled-icons/bootstrap" "^10.34.0"
     "@styled-icons/boxicons-regular" "^10.38.0"

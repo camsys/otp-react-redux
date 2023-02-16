@@ -244,6 +244,9 @@ routingTypes:
 
 # Itinerary options
 itinerary:
+  # Set to false to hide error messages for PATH_NOT_FOUND errors when itineraries are returned
+  #  showPathNotFoundErrorWithItins: false
+
   # Show fares for each transit leg (false if omitted).
   # (Requires using LineItinerary.)
   showRouteFares: false

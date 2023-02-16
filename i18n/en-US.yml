@@ -260,6 +260,8 @@ components:
           }
       }
     viewAll: View all options
+  NarrativeRoutingResults:
+    emptyResults: No results found. Please try a different search.
   NavLoginButton:
     help: Help
     myAccount: My account
@@ -779,6 +781,7 @@ common:
     print: Print
     save: Save
     startOver: Start Over
+    refresh: Refresh
     yes: Yes
   # Shared itinerary description messages
   itineraryDescriptions:

@@ -33,7 +33,7 @@
 
 /* Necessary for defining the height in the main panel nested elements. */
 .main-row main {
-  height: 98%;
+  height: 100%;
 }
 
 .sidebar {
@@ -59,7 +59,7 @@
 
 .otp .sidebar-footer {
   position: absolute;
-  width: 100%;
+  width: 20%;
   right: 14px;
   text-align: right;
   top: 26px;

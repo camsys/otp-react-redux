@@ -2679,7 +2679,7 @@
 "@opentripplanner/trip-form@./custom-packages/otp-ui/trip-form":
   version "1.10.1"
   dependencies:
-    "@opentripplanner/core-utils" "file:../../Library/Caches/Yarn/v6/npm-@opentripplanner-trip-form-1.10.1-77848a9b-2391-4c0b-89ba-576e5ee9775d-1675877524109/node_modules/@opentripplanner/core-utils"
+    "@opentripplanner/core-utils" "file:../../Library/Caches/Yarn/v6/npm-@opentripplanner-trip-form-1.10.1-655452aa-5664-4242-a5bd-2422e2e0f29b-1679408578768/node_modules/@opentripplanner/core-utils"
     "@opentripplanner/icons" "^1.2.1"
     "@styled-icons/bootstrap" "^10.34.0"
     "@styled-icons/boxicons-regular" "^10.38.0"
@@ -16498,10 +16498,10 @@ react-from-dom@^0.6.0:
   resolved "https://registry.yarnpkg.com/react-from-dom/-/react-from-dom-0.6.1.tgz#6740f5a3d79e0c354703e5c096b8fdfe0db71b0f"
   integrity sha512-7aAZx7LhRnmR51W5XtmTBYHGFl2n1AdEk1uoXLuzHa1OoGXrxOW/iwLcudvgp6BGX/l4Yh1rtMrIzvhlvbVddg==
 
-react-ga@^3.3.0:
-  version "3.3.0"
-  resolved "https://registry.yarnpkg.com/react-ga/-/react-ga-3.3.0.tgz#c91f407198adcb3b49e2bc5c12b3fe460039b3ca"
-  integrity sha512-o8RScHj6Lb8cwy3GMrVH6NJvL+y0zpJvKtc0+wmH7Bt23rszJmnqEQxRbyrqUzk9DTJIHoP42bfO5rswC9SWBQ==
+react-ga4@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/react-ga4/-/react-ga4-2.1.0.tgz#56601f59d95c08466ebd6edfbf8dede55c4678f9"
+  integrity sha512-ZKS7PGNFqqMd3PJ6+C2Jtz/o1iU9ggiy8Y8nUeksgVuvNISbmrQtJiZNvC/TjDsqD0QlU5Wkgs7i+w9+OjHhhQ==
 
 react-indiana-drag-scroll@^2.0.1:
   version "2.1.0"

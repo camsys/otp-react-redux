@@ -2679,7 +2679,7 @@
 "@opentripplanner/trip-form@./custom-packages/otp-ui/trip-form":
   version "1.10.1"
   dependencies:
-    "@opentripplanner/core-utils" "file:../../Library/Caches/Yarn/v6/npm-@opentripplanner-trip-form-1.10.1-655452aa-5664-4242-a5bd-2422e2e0f29b-1679408578768/node_modules/@opentripplanner/core-utils"
+    "@opentripplanner/core-utils" "file:../../Library/Caches/Yarn/v6/npm-@opentripplanner-trip-form-1.10.1-34e5db87-07bb-467e-91dc-65fa23d2ad55-1684806933084/node_modules/@opentripplanner/core-utils"
     "@opentripplanner/icons" "^1.2.1"
     "@styled-icons/bootstrap" "^10.34.0"
     "@styled-icons/boxicons-regular" "^10.38.0"

@@ -2429,7 +2429,7 @@
     prop-types "^15.7.2"
 
 "@opentripplanner/core-utils@./custom-packages/otp-ui/core-utils", "@opentripplanner/core-utils@file:custom-packages/otp-ui/core-utils":
-  version "4.8.0"
+  version "4.8.1"
   dependencies:
     "@mapbox/polyline" "^1.1.0"
     "@opentripplanner/geocoder" "^1.1.2"
@@ -2677,9 +2677,9 @@
     velocity-react "^1.4.3"
 
 "@opentripplanner/trip-form@./custom-packages/otp-ui/trip-form":
-  version "1.10.1"
+  version "1.10.2"
   dependencies:
-    "@opentripplanner/core-utils" "file:../../Library/Caches/Yarn/v6/npm-@opentripplanner-trip-form-1.10.1-34e5db87-07bb-467e-91dc-65fa23d2ad55-1684806933084/node_modules/@opentripplanner/core-utils"
+    "@opentripplanner/core-utils" "file:../../Library/Caches/Yarn/v6/npm-@opentripplanner-trip-form-1.10.2-a9e47de8-b87b-43ea-8e1b-4b75aad4af60-1685036250903/node_modules/@opentripplanner/core-utils"
     "@opentripplanner/icons" "^1.2.1"
     "@styled-icons/bootstrap" "^10.34.0"
     "@styled-icons/boxicons-regular" "^10.38.0"

@@ -717,7 +717,7 @@ otpUi:
             true {{phoneNumber}}
             other {ahead}
           } at least {leadDays, plural, one {# day} other {# days}} in advance}
-        other {You must tell the operator where you want to get off.}
+        other {You must tell the operator where you want to get off}
       }.
     flexPickupMessage: >
       To take this route, you must call {hasPhone, select,

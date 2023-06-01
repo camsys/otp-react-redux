@@ -17,6 +17,7 @@ import VelocityTransitionGroup from 'velocity-react/velocity-transition-group'
 
 import * as callTakerActions from '../../actions/call-taker'
 import * as fieldTripActions from '../../actions/field-trip'
+import { ComponentContext } from '../../util/contexts'
 import { isModuleEnabled, Modules } from '../../util/config'
 import { MainPanelContent, setMainPanelContent } from '../../actions/ui'
 import Icon from '../util/icon'
@@ -54,6 +55,8 @@ class AppMenu extends Component<
   AppMenuProps & WrappedComponentProps & RouteComponentProps,
   AppMenuState
 > {
+  static contextType = ComponentContext
+
   _showRouteViewer = () => {
     this.props.setMainPanelContent(MainPanelContent.ROUTE_VIEWER)
     this._togglePane()
@@ -177,6 +180,7 @@ class AppMenu extends Component<
     } = this.props
 
     const { isPaneOpen } = this.state || false
+    const { ContactLink } = this.context
     return (
       <>
         <div
@@ -240,6 +244,18 @@ class AppMenu extends Component<
               </MenuItem>
             )}
             {this._addExtraMenuItems(extraMenuItems)}
+            {ContactLink &&
+              !!ContactLink.defaultProps.linkText &&
+              !!ContactLink.defaultProps.linkHref && (
+                <MenuItem
+                  className="menu-item"
+                  href={ContactLink.defaultProps.linkHref}
+                  target="_blank"
+                >
+                  <Icon type="comment" />
+                  <FormattedMessage id={ContactLink.defaultProps.linkText} />
+                </MenuItem>
+              )}
           </div>
         </SlidingPane>
       </>

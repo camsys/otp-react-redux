@@ -154,9 +154,9 @@ function getPrimaryModeOption(ModeIcon, selectedModes, intl, defaultMessages) {
     id: "TRANSIT",
     selected: selectedModes.some(isTransit) && selectedModes.includes("WALK"),
     showTitle: false,
-    text: /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement(ModeIcon, {
+    text: /*#__PURE__*/React.createElement("span", {className: "modeText"}, /*#__PURE__*/React.createElement("span", {className: "icon"}, React.createElement(ModeIcon, {
       mode: "TRANSIT"
-    }), title),
+    })), React.createElement("span", {className: "label"}, title)),
     title: title
   };
 }
@@ -212,9 +212,10 @@ function getTransitCombinedModeOptions(ModeIcon, modes, selectedModes, selectedC
     return {
       id: id,
       selected: modesHaveTransit && selectedModes.includes(modeStr) && (!selectedCompanies.length || !modeCompanyUpper || selectedCompanies.includes(modeCompanyUpper)),
-      text: /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement(ModeIcon, {
+      showTitle: false,
+      text: /*#__PURE__*/React.createElement("span", {className: "modeText"}, /*#__PURE__*/React.createElement("span", {className: "icon"}, React.createElement(ModeIcon, {
         mode: "TRANSIT"
-      }), "+", finalIcon),
+      }), finalIcon), React.createElement("span", {className: "label"}, modeLabel)),
       title: modeLabel
     };
   });
@@ -242,9 +243,9 @@ function getExclusiveModeOptions(ModeIcon, modes, selectedModes, intl, defaultMe
       id: mode,
       selected: !selectedModes.some(isTransit) && selectedModes.some(isActive),
       showTitle: false,
-      text: /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement(ModeIcon, {
+      text: /*#__PURE__*/React.createElement("span", {className: "modeText"}, /*#__PURE__*/React.createElement("span", {className: "icon"}, React.createElement(ModeIcon, {
         mode: mode
-      }), " ", label),
+      })), React.createElement("span", {className: "label"}, label)),
       title: label
     };
   });

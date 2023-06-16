@@ -129,9 +129,9 @@ export function getTransitSubmodeOptions(ModeIcon, modes, selectedModes) {
     return {
       id: modeStr,
       selected: selectedModes.includes(modeStr),
-      text: /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement(ModeIcon, {
+      text: /*#__PURE__*/React.createElement("span", {className: "modeText"}, React.createElement("span", {className: "icon"}, /*#__PURE__*/React.createElement(ModeIcon, {
         mode: modeStr
-      }), modeLabel),
+      })), React.createElement("span", {className: "label"}, modeLabel)),
       title: modeLabel
     };
   });
@@ -303,9 +303,9 @@ export function getBicycleOrMicromobilityModeOptions(ModeIcon, modes, selectedMo
     return {
       id: mode,
       selected: selectedModes.includes(mode),
-      text: /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement(ModeIcon, {
+      text: /*#__PURE__*/React.createElement("span", {className: "modeText"}, React.createElement("span", {className: "icon"}, /*#__PURE__*/React.createElement(ModeIcon, {
         mode: mode
-      }), label),
+      })), React.createElement("span", {className: "label"}, label)),
       title: label
     };
   });

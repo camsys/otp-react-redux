@@ -46,6 +46,6 @@ export default function ModeSelector(_ref) {
   return /*#__PURE__*/React.createElement(S.ModeSelector, {
     className: className,
     style: style
-  }, primary && /*#__PURE__*/React.createElement(S.ModeSelector.MainRow, null, makeButton(primary)), secondary && /*#__PURE__*/React.createElement(S.ModeSelector.SecondaryRow, null, secondary.map(makeButton)), tertiary && /*#__PURE__*/React.createElement(S.ModeSelector.TertiaryRow, null, tertiary.map(makeButton)));
+  }, primary && makeButton(primary), secondary && secondary.map(makeButton), tertiary && tertiary.map(makeButton));
 }
 //# sourceMappingURL=index.js.map

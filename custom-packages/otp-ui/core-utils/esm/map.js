@@ -215,23 +215,23 @@ export function itineraryToTransitive(itin, companies, getRouteLabel, disableFle
           firstStopId = leg.to.stopId;
           stops[firstStopId] = {
             stop_id: firstStopId,
-            stop_name: leg.pathEnd.name,
+            stop_name: " ",
             stop_lat: leg.pathEnd.lat,
             stop_lon: leg.pathEnd.lon
           };
-        // } else if (isLegDeviated && leg.intermediateStops) {
-        //   firstStopId = leg.from.stopId;
-        //   stops[firstStopId] = {
-        //     stop_id: firstStopId,
-        //     stop_name: leg.intermediateStops[0].name,
-        //     stop_lat: leg.intermediateStops[0].lat,
-        //     stop_lon: leg.intermediateStops[0].lon
-        //   };
+        } else if (isLegDeviated && i == 0) {
+          firstStopId = leg.pathStart.name;
+          stops[firstStopId] = {
+            stop_id: firstStopId,
+            stop_name: leg.from.name,
+            stop_lat: leg.pathStart.lat,
+            stop_lon: leg.pathStart.lon
+          };
         } else if (isLegDeviated) {
           firstStopId = leg.pathStart.name;
           stops[firstStopId] = {
             stop_id: firstStopId,
-            stop_name: `${leg.routeLongName} to ${leg.headsign}`,
+            stop_name: " ",
             stop_lat: leg.pathStart.lat,
             stop_lon: leg.pathStart.lon
           };
@@ -260,7 +260,7 @@ export function itineraryToTransitive(itin, companies, getRouteLabel, disableFle
           lastStopId = leg.from.stopId;
           stops[lastStopId] = {
             stop_id: lastStopId,
-            stop_name: leg.pathStart.name,
+            stop_name: " ",
             stop_lat: leg.pathStart.lat,
             stop_lon: leg.pathStart.lon
           };
@@ -272,40 +272,22 @@ export function itineraryToTransitive(itin, companies, getRouteLabel, disableFle
             stop_lat: leg.to.lat,
             stop_lon: leg.to.lon
           };
-        // } else if (isLegDeviated && leg.intermediateStops) {
-        } else if (isLegDeviated) {
-          // if (hasIntermediateStopGeometry || !hasLegGeometry) {
-          //   leg.intermediateStops.forEach(function (stop, i) {
-          //     if (i > 0) {
-          //       stops[stop.stopId] = {
-          //         stop_id: stop.stopId,
-          //         stop_name: stop.name,
-          //         stop_lat: stop.lat,
-          //         stop_lon: stop.lon
-          //       };
-          //       if (i < leg.intermediateStops.length - 1) {
-          //         pattern.stops.push({
-          //           stop_id: stop.stopId,
-          //           geometry: hasIntermediateStopGeometry && leg.interStopGeometry[i - 1].points
-          //         });
-          //         stopsAdded++;
-          //       }
-          //       else {
-          //         lastStopId = stop.stopId;
-          //       }
-          //     }
-          //   });
-          // } // add 'to' stop to stops dictionary and pattern object
-
-          // else {
+        } else if (isLegDeviated && i == numPatterns - 1) {
           lastStopId = leg.pathEnd.name;
           stops[lastStopId] = {
             stop_id: lastStopId,
-            stop_name: `${leg.routeLongName} to ${leg.headsign}`,
+            stop_name: leg.to.name,
             stop_lat: leg.pathEnd.lat,
             stop_lon: leg.pathEnd.lon
           };
-          // }
+        } else if (isLegDeviated) {
+          lastStopId = leg.pathEnd.name;
+          stops[lastStopId] = {
+            stop_id: lastStopId,
+            stop_name: " ",
+            stop_lat: leg.pathEnd.lat,
+            stop_lon: leg.pathEnd.lon
+          };
         } else {
           lastStopId = leg.to.stopId;
           stops[lastStopId] = {

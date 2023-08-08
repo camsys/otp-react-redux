@@ -164,6 +164,14 @@ var queryParams = [{
   routingTypes: ["ITINERARY"],
   "default": true
 }, {
+  /* walkReluctance - a catch-all weighted parameter for determining ideal itineraries without setting hard limits on walk distances. */
+  name: "walkReluctance",
+  routingTypes: ["ITINERARY"],
+  applicable: function applicable(query) {
+    return query.mode && hasTransit(query.mode) && query.mode.indexOf("WALK") !== -1;
+  },
+  default: 6,
+}, {
   /* maxWalkDistance - the maximum distance in meters the user will walk to transit. */
   name: "maxWalkDistance",
   routingTypes: ["ITINERARY"],
@@ -195,7 +203,41 @@ var queryParams = [{
   }, {
     text: "5 miles",
     value: 8047
-  }]
+  }],
+  itineraryRewrite: function itineraryRewrite(value) {
+    let mappedValue;
+    switch(value) {
+      case 160.9:
+        mappedValue = 12;
+        break;
+      case 402.3:
+        mappedValue = 10;
+        break;
+      case 804.7:
+        mappedValue = 8;
+        break;
+      case 1207:
+        mappedValue = 6;
+        break;
+      case 1609:
+        mappedValue = 4;
+        break;
+      case 3219:
+        mappedValue = 3;
+        break;
+      case 8047:
+        mappedValue = 2;
+        break;
+      default:
+        mappedValue = 6;
+    }
+
+    return {
+      walkReluctance: mappedValue,
+      // ensures that the value is repopulated when loaded from URL params
+      maxWalkDistance: value
+    };
+  }
 }, {
   /* maxBikeDistance - the maximum distance in meters the user will bike. Not
    * actually an OTP parameter (maxWalkDistance doubles for biking) but we
@@ -602,9 +644,6 @@ var queryParams = [{
   routingTypes: ["ITINERARY"]
 }, {
   name: "maxPreTransitTime",
-  routingTypes: ["ITINERARY"]
-}, {
-  name: "walkReluctance",
   routingTypes: ["ITINERARY"]
 }, {
   name: "waitReluctance",

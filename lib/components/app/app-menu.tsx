@@ -215,6 +215,19 @@ class AppMenu extends Component<
               <Icon type="bus" />
               <FormattedMessage id="components.RouteViewer.shortTitle" />
             </MenuItem>
+            {ContactLink &&
+              !!ContactLink.defaultProps.linkText &&
+              !!ContactLink.defaultProps.linkHref && (
+                <MenuItem
+                  className="menu-item"
+                  href={ContactLink.defaultProps.linkHref}
+                  target="_blank"
+                >
+                  <Icon type="comment" />
+                  <FormattedMessage id={ContactLink.defaultProps.linkText} />
+                </MenuItem>
+              )
+            }
             <MenuItem className="menu-item" onClick={this._startOver}>
               <Icon type="undo" />
               <FormattedMessage id="common.forms.startOver" />
@@ -244,18 +257,6 @@ class AppMenu extends Component<
               </MenuItem>
             )}
             {this._addExtraMenuItems(extraMenuItems)}
-            {ContactLink &&
-              !!ContactLink.defaultProps.linkText &&
-              !!ContactLink.defaultProps.linkHref && (
-                <MenuItem
-                  className="menu-item"
-                  href={ContactLink.defaultProps.linkHref}
-                  target="_blank"
-                >
-                  <Icon type="comment" />
-                  <FormattedMessage id={ContactLink.defaultProps.linkText} />
-                </MenuItem>
-              )}
           </div>
         </SlidingPane>
       </>

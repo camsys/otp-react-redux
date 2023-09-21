@@ -191,19 +191,11 @@ export function itineraryToTransitive(itin, companies, getRouteLabel, disableFle
       if (leg.from.isDeviated) numPatterns++;
       if (leg.to.isDeviated) numPatterns++;
 
-      var routeLabel = typeof getRouteLabel === "function" ? getRouteLabel(leg) : leg.routeShortName;
-
       for (var i = 0; i < numPatterns; i++) {
         var ptnId = "ptn_".concat(patternId);
         var pattern = {
           pattern_id: ptnId,
           pattern_name: "Pattern ".concat(patternId),
-          route: {
-            route_short_name: routeLabel || "",
-            route_long_name: leg.routeLongName || "",
-            route_type: 3,
-            route_color: leg.routeColor
-          },
           route_id: leg.routeId,
           stops: []
         }; // add 'from' stop to stops dictionary and pattern object
@@ -324,12 +316,14 @@ export function itineraryToTransitive(itin, companies, getRouteLabel, disableFle
         // add route to the route dictionary
         // with a custom route label if specified.
 
+
+        var routeLabel = typeof getRouteLabel === "function" ? getRouteLabel(leg) : leg.routeShortName;
         routes[leg.routeId] = {
           agency_id: leg.agencyId,
           route_id: leg.routeId,
           route_short_name: routeLabel || "",
           route_long_name: leg.routeLongName || "",
-          route_type: 3,
+          route_type: leg.routeType,
           route_color: leg.routeColor
         }; // add the pattern to the tdata patterns array
 

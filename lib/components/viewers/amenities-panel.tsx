@@ -28,7 +28,9 @@ const StyledParkAndRideIcon = styled.div`
   padding-left: 1px;
 `
 
-const parkAndRideMarker = <StyledParkAndRideIcon>P</StyledParkAndRideIcon>
+const parkAndRideMarker = (
+  <StyledParkAndRideIcon aria-hidden>P</StyledParkAndRideIcon>
+)
 
 type Props = {
   configCompanies: ConfiguredCompany[]
@@ -133,7 +135,7 @@ class AmenitiesPanel extends Component<Props, State> {
           <li className="related-item" key={key}>
             <div className="item-label">
               <div className="overflow-ellipsis" title={label}>
-                {company.icon}
+                <span aria-hidden>{company.icon}</span>
                 {label}
               </div>
             </div>
@@ -170,7 +172,7 @@ class AmenitiesPanel extends Component<Props, State> {
       <ModeIcon
         height={22}
         mode={mode}
-        style={{ marginRight: '5px' }}
+        style={{ marginRight: '5px', maxHeight: '23px' }}
         width={22}
       />
     )
@@ -223,7 +225,7 @@ class AmenitiesPanel extends Component<Props, State> {
         return (
           <li className="related-item" key={key}>
             <div className="item-label">
-              {company.icon}
+              <span aria-hidden>{company.icon}</span>
               <FormattedMessage
                 id="components.AmenitiesPanel.scootersNearby"
                 values={{
@@ -244,7 +246,7 @@ class AmenitiesPanel extends Component<Props, State> {
   }
 
   render() {
-    const { intl } = this.props
+    const { configCompanies, intl } = this.props
     const { expanded } = this.state
     return (
       <RelatedPanel
@@ -257,8 +259,16 @@ class AmenitiesPanel extends Component<Props, State> {
       >
         <ul className="related-items-list list-unstyled">
           {this._renderParkAndRides()}
-          {this._renderBikeRentalStations()}
-          {this._renderVehicleRentalStations()}
+          {!configCompanies ||
+            (configCompanies.find((company) =>
+              company.modes?.includes('BICYCLE_RENT')
+            ) &&
+              this._renderBikeRentalStations())}
+          {!configCompanies ||
+            (configCompanies.find((company) =>
+              company.modes?.includes('SCOOTER_RENT')
+            ) &&
+              this._renderVehicleRentalStations())}
         </ul>
       </RelatedPanel>
     )

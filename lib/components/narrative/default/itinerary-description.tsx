@@ -7,6 +7,8 @@ import { ComponentContext } from '../../../util/contexts'
 import { getFormattedMode } from '../../../util/i18n'
 import FormattedMode from '../../util/formatted-mode'
 
+const { isRideshareLeg } = coreUtils.itinerary
+
 const { isBicycle, isMicromobility, isTransit } = coreUtils.itinerary
 
 type Props = {
@@ -30,7 +32,10 @@ export function getMainItineraryModes({
   let transitMode
   itinerary.legs.forEach((leg, i) => {
     const { duration, mode, rentedBike, rentedVehicle } = leg
-    if (isTransit(mode) && duration > primaryTransitDuration) {
+    if (
+      (leg.transitLeg || isTransit(mode)) &&
+      duration > primaryTransitDuration
+    ) {
       primaryTransitDuration = duration
       transitMode = getFormattedMode(
         combineTransitModes ? 'transit' : mode.toLowerCase(),
@@ -43,6 +48,7 @@ export function getMainItineraryModes({
     if (rentedVehicle || (isMicromobility(mode) && rentedBike))
       accessModeId = 'micromobility_rent'
     if (mode === 'CAR') accessModeId = 'drive'
+    if (isRideshareLeg(leg)) accessModeId = 'ride'
   })
 
   return { mainMode: getFormattedMode(accessModeId, intl), transitMode }
@@ -79,6 +85,7 @@ export function ItineraryDescription({ itinerary }: Props): JSX.Element {
     if (isMicromobility(mode)) accessModeId = 'micromobility'
     if (rentedVehicle) accessModeId = 'micromobility_rent'
     if (mode === 'CAR') accessModeId = 'drive'
+    if (isRideshareLeg(leg)) accessModeId = 'ride'
   })
 
   const mainMode = <FormattedMode mode={accessModeId} />

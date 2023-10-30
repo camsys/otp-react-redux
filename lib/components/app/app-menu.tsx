@@ -1,16 +1,13 @@
 import { Bus } from '@styled-icons/fa-solid/Bus'
-import { ChevronDown } from '@styled-icons/fa-solid/ChevronDown'
-import { ChevronUp } from '@styled-icons/fa-solid/ChevronUp'
 import { connect } from 'react-redux'
 import { Envelope } from '@styled-icons/fa-regular/Envelope'
 import { ExternalLinkSquareAlt } from '@styled-icons/fa-solid/ExternalLinkSquareAlt'
-import { FormattedMessage, injectIntl, useIntl } from 'react-intl'
+import { FormattedMessage, injectIntl } from 'react-intl'
+import { GlobeAmericas, MapMarked } from '@styled-icons/fa-solid'
 import { GraduationCap } from '@styled-icons/fa-solid/GraduationCap'
 import { History } from '@styled-icons/fa-solid/History'
-import { MenuItem } from 'react-bootstrap'
 import { Undo } from '@styled-icons/fa-solid/Undo'
 import { withRouter } from 'react-router'
-import AnimateHeight from 'react-animate-height'
 import React, { Component, Fragment, useContext } from 'react'
 import SlidingPane from 'react-sliding-pane'
 import type { RouteComponentProps } from 'react-router'
@@ -19,38 +16,52 @@ import type { WrappedComponentProps } from 'react-intl'
 import * as callTakerActions from '../../actions/call-taker'
 import * as fieldTripActions from '../../actions/field-trip'
 import * as uiActions from '../../actions/ui'
+import { AppMenuItemConfig, LanguageConfig } from '../../util/config-types'
+import { AppReduxState } from '../../util/state-types'
 import { ComponentContext } from '../../util/contexts'
+import { getLanguageOptions } from '../../util/i18n'
 import { isModuleEnabled, Modules } from '../../util/config'
-import { MainPanelContent, setMainPanelContent } from '../../actions/ui'
-import { StyledIconWrapper } from '../util/styledIcon'
+import { MainPanelContent } from '../../actions/ui-constants'
+import { setMainPanelContent } from '../../actions/ui'
 import startOver from '../util/start-over'
 
+import AppMenuItem from './app-menu-item'
+import PopupTriggerText from './popup-trigger-text'
+
+type MenuItem = {
+  children?: MenuItem[]
+  href?: string
+  iconType?: string | JSX.Element
+  iconUrl?: string
+  id: string
+  isSelected?: boolean
+  label?: string | JSX.Element
+  lang?: string
+  onClick?: () => void
+  skipLocales?: boolean
+  subMenuDivider?: boolean
+}
+
 type AppMenuProps = {
+  activeLocale: string
   callTakerEnabled?: boolean
-  extraMenuItems?: menuItem[]
+  extraMenuItems?: AppMenuItemConfig[]
   fieldTripEnabled?: boolean
+  language?: LanguageConfig
+  languageOptions: Record<string, any> | null
   location: { search: string }
   mailablesEnabled?: boolean
-  popupTarget: string
+  popupTarget?: string
   reactRouterConfig?: { basename: string }
   resetAndToggleCallHistory?: () => void
   resetAndToggleFieldTrips?: () => void
-  setMainPanelContent: (panel: number) => void
+  setLocale: (locale: string) => void
+  setMainPanelContent: (panel: number | null) => void
   setPopupContent: (url: string) => void
   toggleMailables: () => void
 }
 type AppMenuState = {
-  expandedSubmenus: Record<string, boolean>
   isPaneOpen: boolean
-}
-type menuItem = {
-  children: menuItem[]
-  href: string
-  iconType: string
-  iconUrl: string
-  id: string
-  label: string
-  subMenuDivider: boolean
 }
 
 /**
@@ -63,7 +74,6 @@ class AppMenu extends Component<
   static contextType = ComponentContext
 
   state = {
-    expandedSubmenus: {} as Record<string, boolean>,
     isPaneOpen: false
   }
 
@@ -80,8 +90,7 @@ class AppMenu extends Component<
 
   _triggerPopup = () => {
     const { popupTarget, setPopupContent } = this.props
-    setPopupContent(popupTarget)
-    this._togglePane()
+    if (popupTarget) setPopupContent(popupTarget)
   }
 
   _togglePane = () => {
@@ -89,13 +98,16 @@ class AppMenu extends Component<
     this.setState({ isPaneOpen: !isPaneOpen })
   }
 
-  _toggleSubmenu = (id: string) => {
-    const { expandedSubmenus } = this.state
-    const currentlyOpen = expandedSubmenus[id] || false
-    this.setState({ expandedSubmenus: { [id]: !currentlyOpen } })
+  _showTripPlanner = () => {
+    this.props.setMainPanelContent(null)
+    this._togglePane()
   }
 
-  _addExtraMenuItems = (menuItems?: menuItem[]) => {
+  _handleSkipNavigation = () => {
+    document.querySelector('main')?.focus()
+  }
+
+  _addExtraMenuItems = (menuItems?: MenuItem[] | null) => {
     return (
       menuItems &&
       menuItems.map((menuItem) => {
@@ -105,57 +117,39 @@ class AppMenu extends Component<
           iconType,
           iconUrl,
           id,
+          isSelected,
           label: configLabel,
+          lang,
+          onClick,
+          skipLocales,
           subMenuDivider
         } = menuItem
-        const { expandedSubmenus } = this.state
-        const { intl } = this.props
-        const isSubmenuExpanded = expandedSubmenus?.[id]
-
-        const localizationId = `config.menuItems.${id}`
-        const localizedLabel = intl.formatMessage({ id: localizationId })
+        const { activeLocale, language } = this.props
+        const localizedLabel = language?.[activeLocale]?.config?.menuItems?.[id]
+        const useLocalizedLabel = !skipLocales && localizedLabel
         // Override the config label if a localized label exists
-        const label =
-          localizedLabel === localizationId ? configLabel : localizedLabel
-
-        if (children) {
-          return (
-            <Fragment key={id}>
-              <MenuItem
-                className="expansion-button-container menu-item expand-submenu-button"
-                onSelect={() => this._toggleSubmenu(id)}
-              >
-                <IconAndLabel
-                  iconType={iconType}
-                  iconUrl={iconUrl}
-                  label={label}
-                />
-                <StyledIconWrapper className="expand-menu-chevron">
-                  {isSubmenuExpanded ? <ChevronUp /> : <ChevronDown />}
-                </StyledIconWrapper>
-              </MenuItem>
-              <AnimateHeight
-                duration={500}
-                height={isSubmenuExpanded ? 'auto' : 0}
-              >
-                <div className="sub-menu-container">
-                  {this._addExtraMenuItems(children)}
-                </div>
-              </AnimateHeight>
-            </Fragment>
-          )
-        }
+        const label = useLocalizedLabel ? localizedLabel : configLabel
 
         return (
-          <MenuItem
-            className={
-              subMenuDivider ? 'app-menu-divider menu-item' : 'menu-item'
-            }
+          <AppMenuItem
+            aria-selected={isSelected || undefined}
+            className={subMenuDivider ? 'app-menu-divider' : undefined}
             href={href}
+            icon={
+              iconType && typeof iconType !== 'string' ? (
+                iconType
+              ) : (
+                <Icon iconType={iconType} iconUrl={iconUrl} />
+              )
+            }
+            id={id}
             key={id}
-          >
-            <IconAndLabel iconType={iconType} iconUrl={iconUrl} label={label} />
-          </MenuItem>
+            lang={lang}
+            onClick={onClick}
+            role={isSelected !== undefined ? 'option' : undefined}
+            subItems={this._addExtraMenuItems(children) || undefined}
+            text={label}
+          />
         )
       })
     )
@@ -163,100 +157,129 @@ class AppMenu extends Component<
 
   render() {
     const {
+      activeLocale,
       callTakerEnabled,
       extraMenuItems,
       fieldTripEnabled,
       intl,
+      languageOptions,
       mailablesEnabled,
       popupTarget,
       resetAndToggleCallHistory,
       resetAndToggleFieldTrips,
+      setLocale,
       toggleMailables
     } = this.props
+    const languageMenuItems: MenuItem[] | null = languageOptions && [
+      {
+        children: Object.keys(languageOptions).map((locale: string) => ({
+          iconType: <svg />,
+          id: locale,
+          isSelected: activeLocale === locale,
+          label: languageOptions[locale].name,
+          lang: locale,
+          onClick: () => setLocale(locale),
+          skipLocales: true,
+          subMenuDivider: false
+        })),
+        iconType: <GlobeAmericas />,
+        id: 'app-menu-locale-selector',
+        label: <FormattedMessage id="components.SubNav.languageSelector" />,
+        skipLocales: true,
+        subMenuDivider: false
+      }
+    ]
 
     const { isPaneOpen } = this.state
     const { SvgIcon } = this.context
+    const buttonLabel = isPaneOpen
+      ? intl.formatMessage({ id: 'components.AppMenu.closeMenu' })
+      : intl.formatMessage({ id: 'components.AppMenu.openMenu' })
+    const Bar = 'span'
+
     return (
       <>
-        <div
-          aria-label={
-            isPaneOpen
-              ? intl.formatMessage({ id: 'components.AppMenu.closeMenu' })
-              : intl.formatMessage({ id: 'components.AppMenu.openMenu' })
-          }
+        {/* Use a button for skipping navigation. A regular <a href=...> element would modify the URL,
+            and such change would be captured by the router without changing the focused element. */}
+        <button
+          className="skip-nav-button"
+          onClick={this._handleSkipNavigation}
+        >
+          <FormattedMessage id="components.AppMenu.skipNavigation" />
+        </button>
+        <button
+          aria-controls="app-menu"
+          aria-expanded={isPaneOpen}
+          aria-label={buttonLabel}
           className="app-menu-icon"
           onClick={this._togglePane}
-          onKeyDown={this._togglePane}
-          role="button"
-          tabIndex={0}
         >
-          <span className={isPaneOpen ? 'menu-left-x' : 'menu-top-line'} />
-          <span className={isPaneOpen ? '' : 'menu-middle-line'} />
-          <span className={isPaneOpen ? 'menu-right-x' : 'menu-bottom-line'} />
-        </div>
+          <Bar className="menu-line top" />
+          <Bar className="menu-line middle" />
+          <Bar className="menu-line bottom" />
+        </button>
         <SlidingPane
           from="left"
+          hideHeader
           isOpen={isPaneOpen}
-          onRequestClose={this._togglePane}
+          onRequestClose={() => this.setState({ isPaneOpen: false })}
+          shouldCloseOnEsc
           width="320px"
         >
-          <div className="app-menu">
+          <div className="app-menu" id="app-menu">
             {/* This item is duplicated by the view-switcher, but only shown on mobile
             when the view switcher isn't shown (using css) */}
-            <MenuItem
+            <AppMenuItem
+              className="app-menu-trip-planner-link"
+              icon={<MapMarked />}
+              onClick={this._showTripPlanner}
+              text={
+                <FormattedMessage id="components.BatchRoutingPanel.shortTitle" />
+              }
+            />
+            {/* This item is duplicated by the view-switcher, but only shown on mobile
+            when the view switcher isn't shown (using css) */}
+            <AppMenuItem
               className="app-menu-route-viewer-link"
+              icon={<Bus />}
               onClick={this._showRouteViewer}
-            >
-              <StyledIconWrapper>
-                <Bus />
-              </StyledIconWrapper>
-              <FormattedMessage id="components.RouteViewer.shortTitle" />
-            </MenuItem>
-            <MenuItem className="menu-item" onClick={this._startOver}>
-              <StyledIconWrapper>
-                <Undo />
-              </StyledIconWrapper>
-              <FormattedMessage id="common.forms.startOver" />
-            </MenuItem>
+              text={<FormattedMessage id="components.RouteViewer.shortTitle" />}
+            />
+            <AppMenuItem
+              icon={<Undo />}
+              onClick={this._startOver}
+              text={<FormattedMessage id="common.forms.startOver" />}
+            />
             {popupTarget && (
-              <MenuItem className="menu-item" onClick={this._triggerPopup}>
-                <StyledIconWrapper>
-                  <SvgIcon iconName={popupTarget} />
-                </StyledIconWrapper>
-                <FormattedMessage id={`config.popups.${popupTarget}`} />
-              </MenuItem>
+              <AppMenuItem
+                icon={<SvgIcon iconName={popupTarget} />}
+                onClick={this._triggerPopup}
+                text={<PopupTriggerText popupTarget={popupTarget} />}
+              />
             )}
             {callTakerEnabled && (
-              <MenuItem
-                className="menu-item"
+              <AppMenuItem
+                icon={<History />}
                 onClick={resetAndToggleCallHistory}
-              >
-                <StyledIconWrapper>
-                  <History />
-                </StyledIconWrapper>
-                <FormattedMessage id="components.AppMenu.callHistory" />
-              </MenuItem>
+                text={<FormattedMessage id="components.AppMenu.callHistory" />}
+              />
             )}
             {fieldTripEnabled && (
-              <MenuItem
-                className="menu-item"
+              <AppMenuItem
+                icon={<GraduationCap />}
                 onClick={resetAndToggleFieldTrips}
-              >
-                <StyledIconWrapper>
-                  <GraduationCap />
-                </StyledIconWrapper>
-                <FormattedMessage id="components.AppMenu.fieldTrip" />
-              </MenuItem>
+                text={<FormattedMessage id="components.AppMenu.fieldTrip" />}
+              />
             )}
             {mailablesEnabled && (
-              <MenuItem className="menu-item" onClick={toggleMailables}>
-                <StyledIconWrapper>
-                  <Envelope />
-                </StyledIconWrapper>
-                <FormattedMessage id="components.AppMenu.mailables" />
-              </MenuItem>
+              <AppMenuItem
+                icon={<Envelope />}
+                onClick={toggleMailables}
+                text={<FormattedMessage id="components.AppMenu.mailables" />}
+              />
             )}
             {this._addExtraMenuItems(extraMenuItems)}
+            {this._addExtraMenuItems(languageMenuItems)}
           </div>
         </SlidingPane>
       </>
@@ -266,22 +289,24 @@ class AppMenu extends Component<
 
 // connect to the redux store
 
-// FIXME: type otp config
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const mapStateToProps = (state: Record<string, any>) => {
-  const { extraMenuItems } = state.otp.config
+const mapStateToProps = (state: AppReduxState) => {
+  const { extraMenuItems, language, popups } = state.otp.config
   return {
+    activeLocale: state.otp.ui.locale,
     callTakerEnabled: isModuleEnabled(state, Modules.CALL_TAKER),
     extraMenuItems,
     fieldTripEnabled: isModuleEnabled(state, Modules.FIELD_TRIP),
+    language,
+    languageOptions: getLanguageOptions(language),
     mailablesEnabled: isModuleEnabled(state, Modules.MAILABLES),
-    popupTarget: state.otp.config?.popups?.launchers?.sidebarLink
+    popupTarget: popups?.launchers?.sidebarLink
   }
 }
 
 const mapDispatchToProps = {
   resetAndToggleCallHistory: callTakerActions.resetAndToggleCallHistory,
   resetAndToggleFieldTrips: fieldTripActions.resetAndToggleFieldTrips,
+  setLocale: uiActions.setLocale,
   setMainPanelContent,
   setPopupContent: uiActions.setPopupContent,
   toggleMailables: callTakerActions.toggleMailables
@@ -294,39 +319,21 @@ export default injectIntl(
 /**
  * Renders a label and icon either from url or font awesome type
  */
-const IconAndLabel = ({
+export const Icon = ({
   iconType,
-  iconUrl,
-  label
+  iconUrl
 }: {
-  iconType: string
-  iconUrl: string
-  label: string
+  iconType?: string
+  iconUrl?: string
 }): JSX.Element => {
-  const intl = useIntl()
   // FIXME: add types to context
   // @ts-expect-error No type on ComponentContext
   const { SvgIcon } = useContext(ComponentContext)
-
-  return (
-    <span>
-      {/* TODO: clean up double ternary */}
-      {iconUrl ? (
-        <img
-          alt={intl.formatMessage(
-            {
-              id: 'components.AppMenu.menuItemIconAlt'
-            },
-            { label }
-          )}
-          src={iconUrl}
-        />
-      ) : iconType ? (
-        <SvgIcon iconName={iconType} />
-      ) : (
-        <ExternalLinkSquareAlt />
-      )}
-      {label}
-    </span>
+  return iconUrl ? (
+    <img alt="" src={iconUrl} />
+  ) : iconType ? (
+    <SvgIcon iconName={iconType} />
+  ) : (
+    <ExternalLinkSquareAlt />
   )
 }

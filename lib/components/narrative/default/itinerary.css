@@ -1,6 +1,6 @@
 /* ITINERARY OPTION */
 
-.otp .option.default-itin button:focus {
+.otp .option.default-itin button :not(.other-itin):focus {
   outline: none;
 }
 
@@ -24,20 +24,23 @@
   cursor: auto;
 }
 
-.otp .option.metro-itin:last-of-type div.header .itin-wrapper,
+.otp ul li.result:last-of-type div.header .itin-wrapper,
 .route-row:last-of-type .header {
   border: none;
   border-bottom-left-radius: 10px;
   border-bottom-right-radius: 10px;
 }
-.otp .option.metro-itin:first-of-type div.header .itin-wrapper,
+
+.otp ul li.result:first-of-type div.header .itin-wrapper,
 .route-row:first-of-type .header {
   border-top-left-radius: 10px;
   border-top-right-radius: 10px;
 }
 .otp .option.metro-itin.expanded:first-of-type div.header .itin-wrapper {
+  border-bottom: none;
   border-top-left-radius: 0;
   border-top-right-radius: 0;
+  cursor: auto;
 }
 .otp .option.metro-itin .itin-wrapper-small {
   border-radius: 10px;
@@ -100,8 +103,17 @@
 .metro-itin div.header button {
   border: none;
   background: transparent;
-  padding: 0;
+  padding: 2px;
   margin: 0;
+}
+
+.metro-itin div.header button.other-itin {
+  padding: 10px 1em;
+}
+
+.metro-itin div.header button.other-itin:focus,
+.metro-itin div.header button.other-itin:focus-visible {
+  outline-offset: -3px;
 }
 
 /* multiple itinerary underline only when expanded */
@@ -126,13 +138,18 @@
   border-left: 4px teal solid;
 }
 
-/* FIXME: don't highlight if not active */
-.otp .option.default-itin:hover:not(.active) {
+/* Highlight if hovering within search results.
+   FIXME: don't highlight if not active */
+.otp .result .option.default-itin:hover:not(.expanded) {
   background-color: var(--hover-color);
 }
 
 .otp .option.default-itin > .header {
   font-size: 16px;
+}
+
+/* Show a pointer cursor only for itinerary headers under search results. */
+.otp .result .option.default-itin > .header:not(.expanded) {
   cursor: pointer;
 }
 
@@ -140,6 +157,11 @@
   flex: 2;
   font-weight: 500;
   font-size: large;
+}
+
+.otp .option.default-itin > .header .title h3 {
+  margin-top: 5px;
+  margin-bottom: 20px;
 }
 
 .otp .option.default-itin > .header .itinerary-attributes {
@@ -372,4 +394,10 @@
 
 .otp .option.default-itin .step .step-distance {
   float: right;
+}
+
+/* Allow banned/preferred routes to float on top */
+#bannedRoutes,
+#preferredRoutes {
+  z-index: 100;
 }

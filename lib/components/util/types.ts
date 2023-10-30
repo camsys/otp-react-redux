@@ -1,3 +1,5 @@
+import { MapLocationActionArg, Route } from '@opentripplanner/types'
+
 // TYPESCRIPT TODO: move this to a larger shared types file, preferably within otp-ui
 export interface StopData {
   bikeRental: BikeRental
@@ -22,22 +24,12 @@ export interface BikeRental {
   stations: any[]
 }
 
-export interface Route {
-  agencyId: string
-  agencyName: string
-  id: string
-  longName: string
-  mode: string
-  sortOrder: number
-}
-
-// FIXME: incomplete
 export interface StopTime {
-  departureDelay: number
+  departureDelay?: number
   headsign: string
   pattern: Pattern
-  realtimeDeparture: boolean
-  realtimeState: string
+  realtimeDeparture?: boolean
+  realtimeState?: string
   times: Time[]
 }
 
@@ -45,6 +37,11 @@ export interface Pattern {
   desc: string
   headsign: string
   id: string
+  patternGeometry?: {
+    length: number
+    points: string
+  }
+  stops?: StopData[]
 }
 
 export interface Time {
@@ -68,9 +65,43 @@ export interface Time {
   tripId: string
 }
 
+export interface PatternStopTimes {
+  id: string
+  pattern: Pattern
+  route: Route
+  times: Time[]
+}
+
+export interface PatternDayStopTimes extends PatternStopTimes {
+  day: number
+}
+
 export interface VehicleRental {
   errorsByNetwork: { [key: string]: { message?: string; severity?: string } }
   systemInformationDataByNetwork: {
     [key: string]: { message?: string; severity?: string }
   }
 }
+
+export interface ViewedRouteState {
+  patternId?: string
+  routeId: string
+}
+
+export interface RouteVehicle {
+  patternId: string
+}
+
+// Routes have many properties beside id, but none of these are guaranteed.
+export interface ViewedRouteObject extends Route {
+  patterns?: Record<string, Pattern>
+  pending?: boolean
+  url?: string
+  vehicles?: RouteVehicle[]
+}
+
+export type SetViewedRouteHandler = (route?: ViewedRouteState) => void
+
+export type SetViewedStopHandler = (payload: { stopId: string } | null) => void
+
+export type SetLocationHandler = (payload: MapLocationActionArg) => void

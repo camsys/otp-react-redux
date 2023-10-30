@@ -1,15 +1,20 @@
-import { FormattedMessage, FormattedTime } from 'react-intl'
+import { format, utcToZonedTime } from 'date-fns-tz'
+import {
+  FormattedMessage,
+  FormattedTime,
+  injectIntl,
+  IntlShape
+} from 'react-intl'
 import { Redo } from '@styled-icons/fa-solid/Redo'
 import { TransitOperator } from '@opentripplanner/types'
 import coreUtils from '@opentripplanner/core-utils'
+import isSameDay from 'date-fns/isSameDay'
 import React, { Component } from 'react'
 
-import {
-  getRouteIdForPattern,
-  getStopTimesByPattern,
-  routeIsValid
-} from '../../util/viewer'
+import { groupAndSortStopTimesByPatternByDay } from '../../util/stop-times'
 import { IconWithText } from '../util/styledIcon'
+import { StopData } from '../util/types'
+import FormattedDayOfWeek from '../util/formatted-day-of-week'
 import SpanWithSpace from '../util/span-with-space'
 
 import AmenitiesPanel from './amenities-panel'
@@ -26,19 +31,18 @@ const defaultState = {
 type Props = {
   autoRefreshStopTimes: boolean
   findStopTimesForStop: ({ stopId }: { stopId: string }) => void
-  homeTimezone?: string
-  nearbyStops: any // TODO: shared types
+  homeTimezone: string
+  intl: IntlShape
+  nearbyStops: string[]
   setHoveredStop: (stopId: string) => void
   showNearbyStops: boolean
   showOperatorLogo?: boolean
-  // TODO: shared types
-  stopData: any
+  stopData: StopData
   stopViewerArriving: React.ReactNode
   // TODO: shared types
   stopViewerConfig: any
   toggleAutoRefresh: (enable: boolean) => void
-  // TODO: shared types
-  transitOperators: any
+  transitOperators: TransitOperator[]
   viewedStop: { stopId: string }
 }
 
@@ -117,9 +121,30 @@ class LiveStopTimes extends Component<Props, State> {
       this._startAutoRefresh()
   }
 
+  renderDay = (homeTimezone: string, day: number, now: Date): JSX.Element => {
+    const formattedDay = utcToZonedTime(day * 1000, homeTimezone)
+    return (
+      <React.Fragment key={day}>
+        {/* If the service day is not today, add a label */}
+        {!isSameDay(now, formattedDay) && (
+          <p aria-hidden className="day-label">
+            <FormattedDayOfWeek
+              // 'iiii' returns the long ISO day of the week (independent of browser locale).
+              // See https://date-fns.org/v2.28.0/docs/format
+              day={format(formattedDay, 'iiii', {
+                timeZone: homeTimezone
+              }).toLowerCase()}
+            />
+          </p>
+        )}
+      </React.Fragment>
+    )
+  }
+
   render(): JSX.Element {
     const {
       homeTimezone,
+      intl,
       nearbyStops,
       setHoveredStop,
       showNearbyStops,
@@ -131,54 +156,45 @@ class LiveStopTimes extends Component<Props, State> {
     } = this.props
     const { spin } = this.state
     const userTimezone = getUserTimezone()
-    // construct a lookup table mapping pattern (e.g. 'ROUTE_ID-HEADSIGN') to
-    // an array of stoptimes
-    const stopTimesByPattern = getStopTimesByPattern(stopData)
-    const routeComparator =
-      coreUtils.route.makeRouteComparator(transitOperators)
-    const patternHeadsignComparator = coreUtils.route.makeStringValueComparator(
-      // TODO: Shared types
-      (pattern: any) => pattern.pattern.headsign
+    const now = utcToZonedTime(Date.now(), homeTimezone)
+
+    // Time range is set in seconds, so convert to days
+    const daysAhead = stopViewerConfig.timeRange / 86400 || 2
+
+    const refreshButtonText = intl.formatMessage({
+      id: 'components.LiveStopTimes.refresh'
+    })
+
+    const routeTimes = groupAndSortStopTimesByPatternByDay(
+      stopData,
+      now,
+      daysAhead,
+      stopViewerConfig.numberOfDepartures
     )
-
-    // TODO: Shared types
-    const patternComparator = (patternA: any, patternB: any) => {
-      // first sort by routes
-      const routeCompareValue = routeComparator(patternA.route, patternB.route)
-      if (routeCompareValue !== 0) return routeCompareValue
-
-      // if same route, sort by headsign
-      return patternHeadsignComparator(patternA, patternB)
-    }
 
     return (
       <>
         <ul className="route-row-container">
-          {Object.values(stopTimesByPattern)
-            .sort(patternComparator)
-            .filter(({ pattern, route }) =>
-              routeIsValid(route, getRouteIdForPattern(pattern))
-            )
-            .map(({ id, pattern, route, times }) => {
-              // Only add pattern if route info is returned by OTP.
-              return (
-                <PatternRow
-                  homeTimezone={homeTimezone}
-                  key={id}
-                  pattern={pattern}
-                  route={{
-                    ...route,
-                    operator: transitOperators.find(
-                      (o: TransitOperator) => o.agencyId === route.agencyId
-                    )
-                  }}
-                  showOperatorLogo={showOperatorLogo}
-                  stopTimes={times}
-                  stopViewerArriving={stopViewerArriving}
-                  stopViewerConfig={stopViewerConfig}
-                />
-              )
-            })}
+          {routeTimes.map(({ day, id, pattern, route, times }, index) => (
+            <React.Fragment key={`${id}-${day}`}>
+              {((index > 0 &&
+                !isSameDay(day * 1000, routeTimes[index - 1]?.day * 1000)) ||
+                (index === 0 && !isSameDay(now, day * 1000))) &&
+                this.renderDay(homeTimezone, day, now)}
+              <PatternRow
+                homeTimezone={homeTimezone}
+                pattern={pattern}
+                route={{
+                  ...route,
+                  operator: transitOperators.find(
+                    (o: TransitOperator) => o.agencyId === route.agencyId
+                  )
+                }}
+                showOperatorLogo={showOperatorLogo}
+                stopTimes={times}
+              />
+            </React.Fragment>
+          ))}
         </ul>
 
         {/* Auto update controls for realtime arrivals */}
@@ -197,11 +213,17 @@ class LiveStopTimes extends Component<Props, State> {
             <FormattedMessage id="components.LiveStopTimes.autoRefresh" />
           </label>
           <button
+            aria-label={refreshButtonText}
             className="link-button pull-right percy-hide"
             onClick={this._refreshStopTimes}
             style={{ fontSize: 'small' }}
+            title={refreshButtonText}
           >
-            <IconWithText Icon={Redo} spin={spin}>
+            <IconWithText
+              Icon={Redo}
+              spin={spin}
+              styleProps={{ display: 'flex', gap: '5px' }}
+            >
               <FormattedTime
                 timeStyle="short"
                 timeZone={userTimezone}
@@ -229,4 +251,4 @@ class LiveStopTimes extends Component<Props, State> {
   }
 }
 
-export default LiveStopTimes
+export default injectIntl(LiveStopTimes)

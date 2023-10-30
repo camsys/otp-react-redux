@@ -7,6 +7,7 @@ import { ComponentContext } from '../../util/contexts'
 import {
   extractHeadsignFromPattern,
   generateFakeLegForRouteRenderer,
+  routeNameFontSize,
   stopTimeComparator
 } from '../../util/viewer'
 import DefaultRouteRenderer from '../narrative/metro/default-route-renderer'
@@ -20,7 +21,7 @@ type Props = {
   pattern: Pattern
   // Not the true operator type, but the one that's used here
   // It is annoying to shoehorn the operator in here like this, but passing
-  // it in indvidually would cause a situation where a list of routes
+  // it in individually would cause a situation where a list of routes
   // needs to be matched up with a list of operators
   route: Route & { operator?: { colorMode?: string } }
   routeColor: string
@@ -72,10 +73,9 @@ function NextArrivalForPattern({
     { id: 'common.routing.routeToHeadsign' },
     { headsign }
   )
-  const title = `${routeName} ${toHeadsign}`
 
   return (
-    <div
+    <li
       className="next-arrival-row"
       style={{
         backgroundColor: routeColor,
@@ -83,15 +83,18 @@ function NextArrivalForPattern({
       }}
     >
       {/* route name */}
-      <div className="next-arrival-label overflow-ellipsis" title={title}>
+      <div className="next-arrival-label">
         <span className="route-name">
           <RouteRenderer
             isOnColoredBackground={route.operator?.colorMode?.includes('gtfs')}
             // All GTFS bg colors look strange with the top border
             leg={generateFakeLegForRouteRenderer(route, true)}
+            style={{ fontSize: routeNameFontSize(routeName) }}
           />
         </span>
-        {toHeadsign}
+        <span className="overflow-ellipsis" title={toHeadsign}>
+          {toHeadsign}
+        </span>
       </div>
       {/* next departure preview */}
       {hasStopTimes && (
@@ -102,7 +105,7 @@ function NextArrivalForPattern({
           />
         </div>
       )}
-    </div>
+    </li>
   )
 }
 

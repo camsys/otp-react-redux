@@ -1,89 +1,60 @@
-import { connect, ConnectedProps } from 'react-redux'
+import { connect } from 'react-redux'
 import { GlobeAmericas } from '@styled-icons/fa-solid/GlobeAmericas'
-import { MenuItem, NavDropdown } from 'react-bootstrap'
 import { useIntl } from 'react-intl'
-import React, { MouseEvent } from 'react'
+import React from 'react'
 
 import * as uiActions from '../../actions/ui'
-import * as userActions from '../../actions/user'
-import { StyledIconWrapper } from '../util/styledIcon'
+import { Dropdown } from '../util/dropdown'
+import { getLanguageOptions } from '../../util/i18n'
+import { UnstyledButton } from '../util/unstyled-button'
 
-type PropsFromRedux = ConnectedProps<typeof connector>
-
-interface LocaleSelectorProps extends PropsFromRedux {
-  // Typescript TODO configLanguageType
-  configLanguages: Record<string, any>
+interface LocaleSelectorProps {
+  // Typescript TODO languageOptions based on configLanguage type.
+  languageOptions: Record<string, any> | null
+  locale: string
+  setLocale: (locale: string) => void
 }
 
-const LocaleSelector = (props: LocaleSelectorProps): JSX.Element => {
-  const {
-    configLanguages,
-    createOrUpdateUser,
-    locale: currentLocale,
-    loggedInUser,
-    setLocale
-  } = props
-
+const LocaleSelector = (props: LocaleSelectorProps): JSX.Element | null => {
+  const { languageOptions, locale: currentLocale, setLocale } = props
   const intl = useIntl()
 
-  const handleLocaleSelection = (e: MouseEvent<Element>, locale: string) => {
-    e.stopPropagation()
-    if (locale === currentLocale) {
-      e.preventDefault()
-      return
-    }
-    window.localStorage.setItem('lang', locale)
-
-    if (loggedInUser) {
-      loggedInUser.preferredLanguage = locale
-      createOrUpdateUser(loggedInUser, false, intl)
-    }
-    setLocale(locale)
-
-    document.location.reload()
-  }
-
-  return (
-    <NavDropdown
-      id="locale-selector"
-      pullRight
-      title={
-        <StyledIconWrapper style={{ color: 'rgba(255, 255, 255, 0.85)' }}>
-          <GlobeAmericas />
-        </StyledIconWrapper>
-      }
-    >
-      {Object.keys(configLanguages)
-        .filter((locale) => locale !== 'allLanguages')
-        .map((locale) => (
-          <MenuItem
-            className="locale-name"
-            key={locale}
-            onClick={(e: MouseEvent) => handleLocaleSelection(e, locale)}
-          >
-            <span
-              style={locale === currentLocale ? { fontWeight: 'bold' } : {}}
+  // Only render if two or more languages are configured.
+  return languageOptions ? (
+    <li>
+      <Dropdown
+        id="locale-selector"
+        label={intl.formatMessage({ id: 'components.SubNav.selectALanguage' })}
+        listLabel={intl.formatMessage({ id: 'components.SubNav.languages' })}
+        name={<GlobeAmericas />}
+        style={{ display: 'block ruby' }}
+      >
+        {Object.keys(languageOptions).map((locale: string) => (
+          <li key={locale} lang={locale}>
+            <UnstyledButton
+              aria-selected={locale === currentLocale || undefined}
+              onClick={() => setLocale(locale)}
+              role="option"
             >
-              {configLanguages[locale].name}
-            </span>
-          </MenuItem>
+              {languageOptions[locale].name}
+            </UnstyledButton>
+          </li>
         ))}
-    </NavDropdown>
-  )
+      </Dropdown>
+    </li>
+  ) : null
 }
 
 // Typescript TODO: type state properly
 const mapStateToProps = (state: any) => {
   return {
-    locale: state.otp.ui.locale,
-    loggedInUser: state.user.loggedInUser
+    languageOptions: getLanguageOptions(state.otp.config.language),
+    locale: state.otp.ui.locale
   }
 }
 
 const mapDispatchToProps = {
-  createOrUpdateUser: userActions.createOrUpdateUser,
   setLocale: uiActions.setLocale
 }
 
-const connector = connect(mapStateToProps, mapDispatchToProps)
-export default connector(LocaleSelector)
+export default connect(mapStateToProps, mapDispatchToProps)(LocaleSelector)

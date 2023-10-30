@@ -1,16 +1,52 @@
 import { connect } from 'react-redux'
-import { FormattedMessage } from 'react-intl'
-import { Nav, Navbar, NavItem } from 'react-bootstrap'
+import { Nav, Navbar } from 'react-bootstrap'
+import { useIntl } from 'react-intl'
 import React from 'react'
+import styled from 'styled-components'
 
 import * as uiActions from '../../actions/ui'
 import { accountLinks, getAuth0Config } from '../../util/auth'
+import { AppConfig } from '../../util/config-types'
+import { AppReduxState } from '../../util/state-types'
 import { DEFAULT_APP_TITLE } from '../../util/constants'
+import InvisibleA11yLabel from '../util/invisible-a11y-label'
 import NavLoginButtonAuth0 from '../user/nav-login-button-auth0'
 
-import AppMenu from './app-menu'
+import AppMenu, { Icon } from './app-menu'
 import LocaleSelector from './locale-selector'
+import NavbarItem from './nav-item'
 import ViewSwitcher from './view-switcher'
+
+const StyledNav = styled(Nav)`
+  /* Almost override bootstrap's margin-right: -15px */
+  margin-right: -5px;
+  /* Target only the svgs in the Navbar */
+  & > li > button > svg,
+  & > li > span > button > span > svg {
+    height: 18px;
+  }
+
+  & .caret {
+    margin-left: 5px;
+    margin-right: -10px;
+  }
+`
+
+const NavItemOnLargeScreens = styled(NavbarItem)`
+  display: block;
+  @media (max-width: 768px) {
+    display: none !important;
+  }
+`
+
+// Typscript TODO: otpConfig type
+export type Props = {
+  locale: string
+  otpConfig: AppConfig
+  popupTarget?: string
+  setPopupContent: (url: string) => void
+}
+
 /**
  * The desktop navigation bar, featuring a `branding` logo or a `title` text
  * defined in config.yml, and a sign-in button/menu with account links.
@@ -18,88 +54,103 @@ import ViewSwitcher from './view-switcher'
  * The `branding` and `title` parameters in config.yml are handled
  * and shown in this order in the navigation bar:
  * 1. If `branding` is defined, it is shown, and no title is displayed.
+ *    (The title is still rendered for screen readers and browsers that lack image support.)
  * 2. If `branding` is not defined but if `title` is, then `title` is shown.
  * 3. If neither is defined, just show 'OpenTripPlanner' (DEFAULT_APP_TITLE).
  *
  * TODO: merge with the mobile navigation bar.
  */
-// Typscript TODO: otpConfig type
-export type Props = {
-  otpConfig: any
-  popupTarget?: string
-  setPopupContent: (url: string) => void
-}
-
-const DesktopNav = ({ otpConfig, popupTarget, setPopupContent }: Props) => {
-  const { branding, persistence, title = DEFAULT_APP_TITLE } = otpConfig
-  const { language: configLanguages } = otpConfig
+const DesktopNav = ({
+  locale,
+  otpConfig,
+  popupTarget,
+  setPopupContent
+}: Props) => {
+  const {
+    brandClickable,
+    branding,
+    extraMenuItems,
+    persistence,
+    title = DEFAULT_APP_TITLE
+  } = otpConfig
+  const intl = useIntl()
   const showLogin = Boolean(getAuth0Config(persistence))
 
-  // Display branding and title in the order as described in the class summary.
-  let brandingOrTitle
-  if (branding) {
-    brandingOrTitle = (
-      <div
-        className={`icon-${branding}`}
-        // FIXME: Style hack for desktop view.
-        style={{ marginLeft: 50 }}
-      />
-    )
-  } else {
-    brandingOrTitle = (
-      <div className="navbar-title" style={{ marginLeft: 50 }}>
-        {title}
-      </div>
-    )
-  }
+  const BrandingElement = brandClickable ? 'a' : 'div'
+
+  const commonStyles = { marginLeft: 50 }
+  const brandingProps = brandClickable
+    ? {
+        href: '/#/',
+        style: {
+          ...commonStyles,
+          display: 'block',
+          position: 'relative',
+          zIndex: 10
+        }
+      }
+    : { style: { ...commonStyles } }
+  const popupButtonText =
+    popupTarget &&
+    intl.formatMessage({
+      id: `config.popups.${popupTarget}`
+    })
 
   return (
-    <Navbar fluid inverse>
-      {/* Required to allow the hamburger button to be clicked */}
-      <Navbar.Header style={{ position: 'relative', zIndex: 2 }}>
-        <Navbar.Brand>
-          {/* TODO: Reconcile CSS class and inline style. */}
-          <div
-            className="app-menu-container"
-            style={{ color: 'white', float: 'left', marginTop: '5px' }}
-          >
+    <header>
+      <Navbar fluid inverse>
+        <Navbar.Header
+          style={{ position: 'relative', width: '100%', zIndex: 2 }}
+        >
+          <Navbar.Brand>
             <AppMenu />
-          </div>
+            {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
+            {/* @ts-ignore The dynamic tag is causing some trouble */}
+            <BrandingElement
+              className={branding && `with-icon icon-${branding}`}
+              {...brandingProps}
+            >
+              {/* A title is always rendered (e.g.for screen readers)
+                  but is visually-hidden if a branding icon is used. */}
+              <div className="navbar-title">{title}</div>
+            </BrandingElement>
+          </Navbar.Brand>
 
-          {brandingOrTitle}
-        </Navbar.Brand>
-      </Navbar.Header>
-      <ViewSwitcher sticky />
+          <ViewSwitcher sticky />
 
-      <Navbar.Collapse>
-        <Nav pullRight>
-          {popupTarget && (
-            <NavItem onClick={() => setPopupContent(popupTarget)}>
-              <FormattedMessage id={`config.popups.${popupTarget}`} />
-            </NavItem>
-          )}
-          {configLanguages &&
-            // Ensure that > 1 valid language is defined
-            Object.keys(configLanguages).filter(
-              (key) => key !== 'allLanguages' && configLanguages[key].name
-            ).length > 1 && (
-              <LocaleSelector configLanguages={configLanguages} />
+          <StyledNav pullRight>
+            {popupTarget && (
+              <NavItemOnLargeScreens
+                onClick={() => setPopupContent(popupTarget)}
+                title={popupButtonText}
+              >
+                <Icon iconType={popupTarget} />
+                <InvisibleA11yLabel>{popupButtonText}</InvisibleA11yLabel>
+              </NavItemOnLargeScreens>
             )}
-          {showLogin && (
-            <NavLoginButtonAuth0 id="login-control" links={accountLinks} />
-          )}
-        </Nav>
-      </Navbar.Collapse>
-    </Navbar>
+            <LocaleSelector />
+            {showLogin && (
+              <NavLoginButtonAuth0
+                id="login-control"
+                links={accountLinks(extraMenuItems)}
+                locale={locale}
+                style={{ float: 'right' }}
+              />
+            )}
+          </StyledNav>
+        </Navbar.Header>
+      </Navbar>
+    </header>
   )
 }
 
 // connect to the redux store
-// Typescript TODO: state type
-const mapStateToProps = (state: any) => {
+const mapStateToProps = (state: AppReduxState) => {
+  const { config: otpConfig } = state.otp
   return {
-    otpConfig: state.otp.config,
-    popupTarget: state.otp.config?.popups?.launchers?.toolbar
+    locale: state.otp.ui.locale,
+    otpConfig,
+    popupTarget: otpConfig.popups?.launchers?.toolbar
   }
 }
 

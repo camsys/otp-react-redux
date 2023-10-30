@@ -1,10 +1,12 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 // Typescript TODO: Waiting on viewer.js being typed
 import { connect } from 'react-redux'
-import { FormattedTime } from 'react-intl'
+import { FormattedMessage, FormattedTime } from 'react-intl'
+import { InvisibleAdditionalDetails } from '@opentripplanner/itinerary-body/lib/styled'
 import React from 'react'
 import styled from 'styled-components'
 
+import { AppReduxState } from '../../util/state-types'
 import { getTripStatus, REALTIME_STATUS } from '../../util/viewer'
 import FormattedDuration from '../util/formatted-duration'
 import FormattedRealtimeStatusLabel from '../util/formatted-realtime-status-label'
@@ -65,6 +67,7 @@ const RealtimeStatusLabel = ({
   isRealtime,
   onTimeThresholdSeconds,
   originalTime,
+  showScheduleDeviation,
   time,
   withBackground
 }: {
@@ -73,6 +76,7 @@ const RealtimeStatusLabel = ({
   isRealtime?: boolean
   onTimeThresholdSeconds?: number
   originalTime?: number
+  showScheduleDeviation?: boolean
   time?: number
   withBackground?: boolean
 }): JSX.Element => {
@@ -96,7 +100,7 @@ const RealtimeStatusLabel = ({
     // and display the updated time underneath.
     renderedTime = isEarlyOrLate ? (
       <TimeBlock>
-        <TimeStruck>
+        <TimeStruck aria-hidden>
           <FormattedTime timeStyle="short" value={originalTime} />
         </TimeStruck>
         <div>
@@ -117,29 +121,44 @@ const RealtimeStatusLabel = ({
     >
       {renderedTime}
       <MainContent>
-        <FormattedRealtimeStatusLabel
-          minutes={
-            isEarlyOrLate ? (
-              <DelayText>
-                <FormattedDuration duration={Math.abs(delay)} />
-              </DelayText>
-            ) : (
-              <>{null}</>
-            )
-          }
-          // @ts-ignore getTripStatus is not typed yet
-          status={STATUS[status].label}
-        />
+        {showScheduleDeviation && (
+          <FormattedRealtimeStatusLabel
+            minutes={
+              isEarlyOrLate ? (
+                <DelayText>
+                  <FormattedDuration
+                    duration={Math.abs(delay)}
+                    includeSeconds={false}
+                  />
+                </DelayText>
+              ) : (
+                <>{null}</>
+              )
+            }
+            // @ts-ignore getTripStatus is not typed yet
+            status={STATUS[status].label}
+          />
+        )}
+        {isEarlyOrLate && (
+          <InvisibleAdditionalDetails>
+            <FormattedMessage
+              id="components.MetroUI.originallyScheduledTime"
+              values={{
+                originalTime: (
+                  <FormattedTime timeStyle="short" value={originalTime} />
+                )
+              }}
+            />
+          </InvisibleAdditionalDetails>
+        )}
       </MainContent>
     </Container>
   )
 }
 
-const mapStateToProps = (state: {
-  // Typescript TODO: type state
-  otp: { config: { onTimeThresholdSeconds: any } }
-}) => ({
-  onTimeThresholdSeconds: state.otp.config.onTimeThresholdSeconds
+const mapStateToProps = (state: AppReduxState) => ({
+  onTimeThresholdSeconds: state.otp.config.onTimeThresholdSeconds,
+  showScheduleDeviation: state.otp.config.showScheduleDeviation
 })
 
 export default connect(mapStateToProps)(RealtimeStatusLabel)

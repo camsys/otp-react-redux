@@ -1,5 +1,5 @@
 import { useAuth0 } from '@auth0/auth0-react'
-import React from 'react'
+import React, { HTMLAttributes, useCallback } from 'react'
 
 import { getCurrentRoute } from '../../util/ui'
 
@@ -10,11 +10,10 @@ type AccountLink = {
   url: string
 }
 
-interface NavLoginButtonAuth0Props {
-  className?: string
+interface NavLoginButtonAuth0Props extends HTMLAttributes<HTMLElement> {
   id: string
   links: Array<AccountLink>
-  style?: string
+  locale: string
 }
 
 /**
@@ -24,20 +23,32 @@ const NavLoginButtonAuth0 = ({
   className,
   id,
   links,
+  locale,
   style
-}: NavLoginButtonAuth0Props) => {
+}: NavLoginButtonAuth0Props): JSX.Element => {
   const { isAuthenticated, loginWithRedirect, logout, user } = useAuth0()
 
+  // For Chinese (Chinese (Simplified)), we must pass 'zh-CN' to auth0.
+  // Unlike 'fr', 'zh' alone is not recognized and falls back to English.
+  const auth0Locale = locale === 'zh' ? 'zh-CN' : locale
+
   // On login, preserve the current trip query if any.
-  const handleLogin = () =>
-    loginWithRedirect({
-      appState: { returnTo: getCurrentRoute() }
-    })
-  const handleLogout = () =>
-    logout({
-      // Logout to the map with no search.
-      returnTo: window.location.origin
-    })
+  const handleLogin = useCallback(
+    () =>
+      loginWithRedirect({
+        appState: { returnTo: getCurrentRoute() },
+        ui_locales: auth0Locale
+      }),
+    [auth0Locale, loginWithRedirect]
+  )
+  const handleLogout = useCallback(
+    () =>
+      logout({
+        // Logout to the map with no search.
+        returnTo: window.location.origin
+      }),
+    [logout]
+  )
 
   // On logout, it is better to "clear" the screen, so
   // return to redirectUri set in <Auth0Provider> (no specific event handler).

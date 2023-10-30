@@ -1,127 +1,147 @@
-/* eslint-disable react/prop-types */
-import { Cog } from '@styled-icons/fa-solid/Cog'
+import {
+  addSettingsToButton,
+  MetroModeSelector,
+  populateSettingWithValue
+} from '@opentripplanner/trip-form'
 import { connect } from 'react-redux'
-import { injectIntl, IntlShape } from 'react-intl'
+import {
+  decodeQueryParams,
+  DelimitedArrayParam,
+  encodeQueryParams
+} from 'use-query-params'
+import {
+  ModeButtonDefinition,
+  ModeSetting,
+  ModeSettingValues
+} from '@opentripplanner/types'
 import { Search } from '@styled-icons/fa-solid/Search'
 import { SyncAlt } from '@styled-icons/fa-solid/SyncAlt'
-import coreUtils from '@opentripplanner/core-utils'
-import React, { Component } from 'react'
-import styled from 'styled-components'
+import { useIntl } from 'react-intl'
+import React, { useCallback, useContext, useState } from 'react'
+import tinycolor from 'tinycolor2'
 
 import * as apiActions from '../../actions/api'
 import * as formActions from '../../actions/form'
-import { combinationFilter } from '../../util/combination-filter'
+import { ComponentContext } from '../../util/contexts'
+import { generateModeSettingValues } from '../../util/api'
 import { getActiveSearch, hasValidLocation } from '../../util/state'
-import { getDefaultModes } from '../../util/itinerary'
+import { getFormattedMode } from '../../util/i18n'
+import { RoutingQueryCallResult } from '../../actions/api-constants'
 import { StyledIconWrapper } from '../util/styledIcon'
 
 import {
-  BatchPreferencesContainer,
-  DateTimeModalContainer,
   MainSettingsRow,
-  PlanTripButton,
-  SettingsPreview,
-  StyledDateTimePreview
+  ModeSelectorContainer,
+  PlanTripButton
 } from './batch-styled'
-import { Dot } from './styled'
-import BatchPreferences, { replaceTransitMode } from './batch-preferences'
-import DateTimeModal from './date-time-modal'
-import ModeButtons, {
-  defaultModeOptions,
-  StyledModeButton
-} from './mode-buttons'
-import type { Combination } from './batch-preferences'
-import type { Mode } from './mode-buttons'
+import DateTimeButton from './date-time-button'
 
-const ModeButtonsFullWidthContainer = styled.div`
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 5px;
-`
+const queryParamConfig = { modeButtons: DelimitedArrayParam }
 
-// Define Mode Button styled components here to avoid circular imports. I.e., we
-// cannot define them in styled.js (because mode-buttons.js imports buttonCss
-// and then we would need to import ModeButtons/StyledModeButton from that file
-// in turn).
-const ModeButtonsFullWidth = styled(ModeButtons)`
-  &:last-child {
-    margin-right: 0px;
-  }
-`
-
-const ModeButtonsContainerCompressed = styled.div`
-  display: contents;
-`
-
-const ModeButtonsCompressed = styled(ModeButtons)`
-  ${StyledModeButton} {
-    border-radius: 0px;
-  }
-  &:first-child {
-    border-radius: 5px 0px 0px 5px;
-  }
-  &:last-child {
-    margin-right: 5px;
-    border-radius: 0px 5px 5px 0px;
-  }
-`
 // TYPESCRIPT TODO: better types
 type Props = {
   activeSearch: any
-  config: any
   currentQuery: any
-  intl: IntlShape
-  modeOptions: Mode[]
-  possibleCombinations: Combination[]
+  enabledModeButtons: string[]
+  fillModeIcons?: boolean
+  modeButtonOptions: ModeButtonDefinition[]
+  modeSettingDefinitions: ModeSetting[]
+  modeSettingValues: ModeSettingValues
+  onPlanTripClick: () => void
   routingQuery: any
-  setQueryParam: (queryParam: any) => void
+  setUrlSearch: (evt: any) => void
+  spacedOutModeSelector?: boolean
+  updateQueryTimeIfLeavingNow: () => void
 }
 
-type State = {
-  expanded?: string | null
-  selectedModes: string[]
+// This method is used to daisy-chain a series of functions together on a given value
+function pipe<T>(...fns: Array<(arg: T) => T>) {
+  return (value: T) => fns.reduce((acc, fn) => fn(acc), value)
+}
+
+export function setModeButtonEnabled(enabledKeys: string[]) {
+  return (modeButton: ModeButtonDefinition): ModeButtonDefinition => {
+    return {
+      ...modeButton,
+      enabled: enabledKeys.includes(modeButton.key)
+    }
+  }
 }
 
 /**
  * Main panel for the batch/trip comparison form.
  */
-class BatchSettings extends Component<Props, State> {
-  constructor(props: Props) {
-    super(props)
-    this.state = {
-      expanded: null,
-      selectedModes: getDefaultModes(props.modeOptions) || []
-    }
-  }
+function BatchSettings({
+  activeSearch,
+  currentQuery,
+  enabledModeButtons,
+  fillModeIcons,
+  modeButtonOptions,
+  modeSettingDefinitions,
+  modeSettingValues,
+  onPlanTripClick,
+  routingQuery,
+  setUrlSearch,
+  spacedOutModeSelector,
+  updateQueryTimeIfLeavingNow
+}: Props) {
+  const intl = useIntl()
 
-  _onClickMode = (mode: string) => {
-    const { currentQuery, modeOptions, possibleCombinations, setQueryParam } =
-      this.props
-    const { selectedModes } = this.state
-    const index = selectedModes.indexOf(mode)
-    const enableMode = index === -1
-    const newModes = [...selectedModes]
-    if (enableMode) newModes.push(mode)
-    else newModes.splice(index, 1)
-    // Update selected modes for mode buttons.
-    this.setState({ selectedModes: newModes })
-    // Update the available mode combinations based on the new modes selection.
-    const possibleModes = modeOptions.map((m) => m.mode)
-    const disabledModes = possibleModes.filter((m) => !newModes.includes(m))
-    // Only include a combination if it every required mode is enabled.
-    const newCombinations = possibleCombinations
-      .filter(combinationFilter(newModes))
-      .map(replaceTransitMode(currentQuery.mode))
+  // Whether the date/time selector is open
+  const [dateTimeOpen, setDateTimeOpen] = useState(false)
 
-    setQueryParam({
-      combinations: newCombinations,
-      disabledModes,
-      enabledModes: newModes
-    })
-  }
+  // Whether the mode selector has a popup open
+  const [modeSelectorPopup, setModeSelectorPopup] = useState(false)
 
-  _planTrip = () => {
-    const { currentQuery, intl, routingQuery } = this.props
+  // @ts-expect-error Context not typed
+  const { ModeIcon } = useContext(ComponentContext)
+
+  const addModeButtonIcon = useCallback(
+    (def: ModeButtonDefinition) => ({
+      ...def,
+      Icon: function ModeButtonIcon() {
+        return <ModeIcon mode={def.iconName} />
+      }
+    }),
+    [ModeIcon]
+  )
+
+  const populateSettingWithIcon = useCallback(
+    (msd: ModeSetting) => ({
+      ...msd,
+      icon: <ModeIcon mode={msd.iconName} width={16} />
+    }),
+    [ModeIcon]
+  )
+
+  const addCustomSettingLabels = useCallback(
+    (msd: ModeSetting) =>
+      msd.type === 'SUBMODE'
+        ? {
+            ...msd,
+            label: getFormattedMode(msd.addTransportMode.mode, intl)
+          }
+        : msd,
+    [intl]
+  )
+
+  const processedModeSettings = modeSettingDefinitions.map(
+    pipe(
+      populateSettingWithIcon,
+      populateSettingWithValue(modeSettingValues),
+      addCustomSettingLabels
+    )
+  )
+
+  const processedModeButtons = modeButtonOptions.map(
+    pipe(
+      addModeButtonIcon,
+      addSettingsToButton(processedModeSettings),
+      setModeButtonEnabled(enabledModeButtons)
+    )
+  )
+
+  const _planTrip = useCallback(() => {
     // Check for any validation issues in query.
     const issues = []
     if (!hasValidLocation(currentQuery, 'from')) {
@@ -132,6 +152,7 @@ class BatchSettings extends Component<Props, State> {
         intl.formatMessage({ id: 'components.BatchSettings.destination' })
       )
     }
+    onPlanTripClick && onPlanTripClick()
     if (issues.length > 0) {
       // TODO: replace with less obtrusive validation.
       window.alert(
@@ -142,112 +163,138 @@ class BatchSettings extends Component<Props, State> {
       )
       return
     }
-    // Close any expanded panels.
-    this.setState({ expanded: null })
 
     // Plan trip.
-    routingQuery()
-  }
+    updateQueryTimeIfLeavingNow()
+    const routingQueryResult = routingQuery()
 
-  _updateExpanded = (type: string) => ({
-    expanded: this.state.expanded === type ? null : type
-  })
+    // If mode combination is not valid (i.e. produced no query), alert the user.
+    if (routingQueryResult === RoutingQueryCallResult.INVALID_MODE_SELECTION) {
+      window.alert(
+        intl.formatMessage({
+          id: 'components.BatchSettings.invalidModeSelection'
+        })
+      )
+    }
+  }, [
+    currentQuery,
+    intl,
+    onPlanTripClick,
+    routingQuery,
+    updateQueryTimeIfLeavingNow
+  ])
 
-  _toggleDateTime = () => this.setState(this._updateExpanded('DATE_TIME'))
+  const _toggleModeButton = useCallback(
+    (buttonId: string, newState: boolean) => {
+      let newButtons
+      if (newState) {
+        newButtons = [...enabledModeButtons, buttonId]
+      } else {
+        newButtons = enabledModeButtons.filter((c) => c !== buttonId)
+      }
 
-  _toggleSettings = () => this.setState(this._updateExpanded('SETTINGS'))
+      // encodeQueryParams serializes the mode buttons for the URL
+      // to get nice looking URL params and consistency
+      setUrlSearch(
+        encodeQueryParams(queryParamConfig, { modeButtons: newButtons })
+      )
+    },
+    [enabledModeButtons, setUrlSearch]
+  )
 
-  render() {
-    const { activeSearch, config, currentQuery, intl, modeOptions } = this.props
-    const { expanded, selectedModes } = this.state
-    return (
-      <>
-        <ModeButtonsFullWidthContainer className="hidden-lg">
-          <ModeButtonsFullWidth
-            className="flex"
-            modeOptions={modeOptions}
-            onClick={this._onClickMode}
-            selectedModes={selectedModes}
-          />
-        </ModeButtonsFullWidthContainer>
-        <MainSettingsRow>
-          <SettingsPreview
-            aria-label={intl.formatMessage({
-              id: 'components.BatchSettings.settings'
-            })}
-            expanded={expanded === 'SETTINGS'}
-            onClick={this._toggleSettings}
-          >
-            {coreUtils.query.isNotDefaultQuery(currentQuery, config) && (
-              <Dot className="dot" />
-            )}
-            <StyledIconWrapper size="2x">
-              <Cog />
-            </StyledIconWrapper>
-          </SettingsPreview>
-          <StyledDateTimePreview
-            // as='button'
-            expanded={expanded === 'DATE_TIME'}
-            hideButton
-            onClick={this._toggleDateTime}
-          />
-          <ModeButtonsContainerCompressed>
-            <ModeButtonsCompressed
-              className="visible-lg straight-corners"
-              modeOptions={modeOptions}
-              onClick={this._onClickMode}
-              selectedModes={selectedModes}
-            />
-          </ModeButtonsContainerCompressed>
-          <PlanTripButton
-            id="plan-trip"
-            onClick={this._planTrip}
-            title={intl.formatMessage({
-              id: 'components.BatchSettings.planTripTooltip'
-            })}
-          >
-            <StyledIconWrapper style={{ fontSize: '1.6em' }}>
-              {hasValidLocation(currentQuery, 'from') &&
-              hasValidLocation(currentQuery, 'to') &&
-              !!activeSearch ? (
-                <SyncAlt />
-              ) : (
-                <Search />
-              )}
-            </StyledIconWrapper>
-          </PlanTripButton>
-        </MainSettingsRow>
-        {expanded === 'DATE_TIME' && (
-          <DateTimeModalContainer>
-            <DateTimeModal />
-          </DateTimeModalContainer>
-        )}
-        {expanded === 'SETTINGS' && (
-          <BatchPreferencesContainer>
-            <BatchPreferences />
-          </BatchPreferencesContainer>
-        )}
-      </>
+  /**
+   * Check whether the mode selector is showing a popup.
+   */
+  const checkModeSelectorPopup = useCallback(() => {
+    const modeSelectorPopup = document.querySelector(
+      '.metro-mode-selector div[role="dialog"]'
     )
-  }
+    setModeSelectorPopup(!!modeSelectorPopup)
+  }, [setModeSelectorPopup])
+
+  // We can rely on this existing, as there is a default
+  const baseColor = getComputedStyle(document.documentElement).getPropertyValue(
+    '--main-base-color'
+  )
+  const accentColor = tinycolor(baseColor).darken(10)
+
+  return (
+    <MainSettingsRow onMouseMove={checkModeSelectorPopup}>
+      <DateTimeButton
+        open={dateTimeOpen}
+        setOpen={setDateTimeOpen}
+        // Prevent the hover on date/time selector when mode selector has a popup open via keyboard.
+        style={{ pointerEvents: modeSelectorPopup ? 'none' : undefined }}
+      />
+      <ModeSelectorContainer
+        squashed={!spacedOutModeSelector}
+        // Prevent hover effect on mode selector when date selector is activated via keyboard.
+        style={{ pointerEvents: dateTimeOpen ? 'none' : undefined }}
+      >
+        <MetroModeSelector
+          accentColor={baseColor}
+          activeHoverColor={accentColor.toHexString()}
+          fillModeIcons={fillModeIcons}
+          label={intl.formatMessage({
+            id: 'components.BatchSearchScreen.modeSelectorLabel'
+          })}
+          modeButtons={processedModeButtons}
+          onSettingsUpdate={setUrlSearch}
+          onToggleModeButton={_toggleModeButton}
+        />
+        <PlanTripButton
+          id="plan-trip"
+          onClick={_planTrip}
+          title={intl.formatMessage({
+            id: 'components.BatchSettings.planTripTooltip'
+          })}
+        >
+          <StyledIconWrapper style={{ fontSize: '1.6em' }}>
+            {hasValidLocation(currentQuery, 'from') &&
+            hasValidLocation(currentQuery, 'to') &&
+            !!activeSearch ? (
+              <SyncAlt />
+            ) : (
+              <Search />
+            )}
+          </StyledIconWrapper>
+        </PlanTripButton>
+      </ModeSelectorContainer>
+    </MainSettingsRow>
+  )
 }
 
 // connect to the redux store
 // TODO: Typescript
-const mapStateToProps = (state: any) => ({
-  activeSearch: getActiveSearch(state),
-  config: state.otp.config,
-  currentQuery: state.otp.currentQuery,
-  modeOptions: state.otp.config.modes.modeOptions || defaultModeOptions,
-  possibleCombinations: state.otp.config.modes.combinations
-})
+const mapStateToProps = (state: any) => {
+  const urlSearchParams = new URLSearchParams(state.router.location.search)
+  const modeSettingValues = generateModeSettingValues(
+    urlSearchParams,
+    state.otp?.modeSettingDefinitions || [],
+    state.otp.config.modes?.initialState?.modeSettingValues
+  )
+  return {
+    activeSearch: getActiveSearch(state),
+    currentQuery: state.otp.currentQuery,
+    // TODO: Duplicated in apiv2.js
+    enabledModeButtons:
+      decodeQueryParams(queryParamConfig, {
+        modeButtons: urlSearchParams.get('modeButtons')
+      })?.modeButtons ||
+      state.otp.config?.modes?.initialState?.enabledModeButtons ||
+      {},
+    fillModeIcons: state.otp.config.itinerary?.fillModeIcons,
+    modeButtonOptions: state.otp.config?.modes?.modeButtons || [],
+    modeSettingDefinitions: state.otp?.modeSettingDefinitions || [],
+    modeSettingValues,
+    spacedOutModeSelector: state.otp?.config?.modes?.spacedOut
+  }
+}
 
 const mapDispatchToProps = {
   routingQuery: apiActions.routingQuery,
-  setQueryParam: formActions.setQueryParam
+  setUrlSearch: apiActions.setUrlSearch,
+  updateQueryTimeIfLeavingNow: formActions.updateQueryTimeIfLeavingNow
 }
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(injectIntl(BatchSettings))
+export default connect(mapStateToProps, mapDispatchToProps)(BatchSettings)

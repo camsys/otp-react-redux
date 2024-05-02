@@ -181,6 +181,7 @@ class AppMenu extends Component<
 
     const { isPaneOpen } = this.state || false
     const { ContactLink } = this.context
+    const { surveyProps } = this.context
     return (
       <>
         <div
@@ -226,8 +227,17 @@ class AppMenu extends Component<
                   <Icon type="comment" />
                   <FormattedMessage id={ContactLink.defaultProps.linkText} />
                 </MenuItem>
-              )
-            }
+              )}
+            {surveyProps && !!surveyProps.linkText && !!surveyProps.linkHref && (
+              <MenuItem
+                className="menu-item"
+                href={surveyProps.linkHref}
+                target="_blank"
+              >
+                <Icon type="clipboard solid" />
+                <FormattedMessage id={surveyProps.linkText} />
+              </MenuItem>
+            )}
             <MenuItem className="menu-item" onClick={this._startOver}>
               <Icon type="undo" />
               <FormattedMessage id="common.forms.startOver" />

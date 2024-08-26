@@ -182,6 +182,7 @@ class AppMenu extends Component<
     const { isPaneOpen } = this.state || false
     const { ContactLink } = this.context
     const { surveyProps } = this.context
+    const { bookingProps } = this.context
     return (
       <>
         <div
@@ -238,6 +239,18 @@ class AppMenu extends Component<
                 <FormattedMessage id={surveyProps.linkText} />
               </MenuItem>
             )}
+            {bookingProps &&
+              !!bookingProps.linkText &&
+              !!bookingProps.linkHref && (
+                <MenuItem
+                  className="menu-item"
+                  href={bookingProps.linkHref}
+                  target="_blank"
+                >
+                  <Icon type="book" />
+                  <FormattedMessage id={bookingProps.linkText} />
+                </MenuItem>
+              )}
             <MenuItem className="menu-item" onClick={this._startOver}>
               <Icon type="undo" />
               <FormattedMessage id="common.forms.startOver" />

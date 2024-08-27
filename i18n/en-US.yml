@@ -769,6 +769,7 @@ common:
   # Note to translator: these values are width-constrained.
   forms:
     back: Back
+    bookOnline: Book Online
     cancel: Cancel
     clear: Clear
     error: error!

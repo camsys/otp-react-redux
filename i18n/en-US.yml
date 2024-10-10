@@ -459,7 +459,7 @@ components:
   TabbedItineraries:
     optionNumber: "Option {optionNum, number}"
     # Note to translator: This text is width-constrained.
-    mustCallAhead: Must call ahead!
+    mustCallAhead: Must book ahead!
     fareCost: >
       {hasMaxFare, select, 
         true {{minTotalFare}+}

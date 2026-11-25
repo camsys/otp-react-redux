@@ -19,3 +19,6 @@ dist
 *config.yml
 !example-config.yml
 !test-config.yml
+
+# MnDOT local run config (copied from mndot-otp-v2-docker/frontend, see README)
+/mndot-local/
